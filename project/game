@@ -1,0 +1,70 @@
+import sys
+import pygame
+from pygame.locals import QUIT
+
+pygame.init()
+
+class Pointer():
+    def __init__(self, WINDOW_WIDTH, WINDOW_HEIGHT, fi) -> None:
+        self.image = pygame.image.load(fi)
+        self.size = self.image.get_size()
+        self.pos = (WINDOW_WIDTH/2-self.size[0]/2, WINDOW_HEIGHT-self.size[1])
+    
+    def blit(self):
+        #self.image.fill(TRANSPARENT)
+        window_surface.blit(self.image, self.pos)
+        pygame.display.update()
+        return
+
+    def rot_center(self, angle):
+        """rotate an image while keeping its center and size"""
+        orig_rect = self.image.get_rect()
+        rot_image = pygame.transform.rotozoom(self.image, angle, 1)
+        rot_rect = orig_rect.copy()
+        rot_rect.center = rot_image.get_rect().center
+        rot_image = rot_image.subsurface(rot_rect).copy()
+        return rot_image
+
+class Balls(pygame.sprite.Sprite):
+    def __init__(self, initial_position) -> None:
+        super().__init__(self)
+        self.image = pygame.Surface([30,30])
+        self.image.fill((0,0,0))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = initial_position
+
+
+WINDOW_WIDTH = 500
+WINDOW_HEIGHT = 600
+WHITE = (255, 255, 255)
+fi_pointer = "files/pointer.jpg"
+
+window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+pygame.display.set_caption("GAME")
+window_surface.fill(WHITE)
+
+pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
+pointer.blit()
+
+ball = Balls((0,0))
+
+pygame.display.update()
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == ord("a"):
+                pointer.image = pointer.rot_center(1)
+                pointer.blit()
+            if event.key == ord("d"):
+                pointer.image = pointer.rot_center(-1)
+                pointer.blit()
+
+
+
+
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+    window_surface.fill(WHITE)
