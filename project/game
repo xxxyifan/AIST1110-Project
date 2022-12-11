@@ -144,12 +144,17 @@ ball_group.add(ball)
 is_degree_change = False
 change_value = 0
 
+pygame.draw.rect (window_surface, (100,0,0), (40, 40, 50, 50), 3) # Set Block as Red as color (temp)
 # Generate Blocks (TEST)
 generate_blocks(window_surface)
 
 while True:
     clock.tick(FPS)
     rad = degree/180 * math.pi
+
+    pygame.draw.rect(window_surface, (100,0,0), (40, 40, 50, 50), 3) # Set Block as Red as color (temp)
+    # Generate Blocks (TEST)
+    generate_blocks(window_surface)
 
     #move the pointer
     if is_degree_change == True:
