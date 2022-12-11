@@ -48,8 +48,8 @@ class Balls(pygame.sprite.Sprite):
         if self.is_move == True:
             pos_x = self.rect.center[0]
             pos_y = self.rect.center[1]
-            pos_x += 3 * self.x_speed
-            pos_y -= 3 * self.y_speed
+            pos_x += 10 * self.x_speed
+            pos_y -= 10 * self.y_speed
             self.rect.center = (pos_x, pos_y)
 
             if self.rect.center[1] >= WINDOW_HEIGHT+25:
