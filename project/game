@@ -37,7 +37,7 @@ class Barriers():
         self.height = self.width
 
     def render(self, window_surface):
-        pygame.draw.rect (window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
+        pygame.draw.rect(window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
 
 
 class Balls(pygame.sprite.Sprite):
@@ -92,11 +92,11 @@ def generate_blocks(window_surface):
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0],
+        [0,0,1,1,1,0,0,0,0,0],
         [0,0,0,1,1,0,0,0,0,0],
         [0,0,0,1,1,0,0,0,0,0],
         [0,0,0,1,1,0,0,0,0,0],
-        [0,0,0,1,1,0,0,0,0,0],
-        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,1,1,0,0,0],
         [0,0,0,0,0,0,0,0,0,0]
     ]
 
@@ -105,7 +105,7 @@ def generate_blocks(window_surface):
     for i in range(len(level_test)):
         for j in range(len(level_test[i])):
             if (level_test[i][j] == 1):
-                block_generate.append(Barriers(i, j, 50, 50))
+                block_generate.append(Barriers(j * 50, i * 50, 50, 50))
     
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
@@ -144,15 +144,13 @@ ball_group.add(ball)
 is_degree_change = False
 change_value = 0
 
-pygame.draw.rect (window_surface, (100,0,0), (40, 40, 50, 50), 3) # Set Block as Red as color (temp)
-# Generate Blocks (TEST)
-generate_blocks(window_surface)
 
 while True:
     clock.tick(FPS)
     rad = degree/180 * math.pi
 
-    pygame.draw.rect(window_surface, (100,0,0), (40, 40, 50, 50), 3) # Set Block as Red as color (temp)
+    window_surface.fill(WHITE)
+
     # Generate Blocks (TEST)
     generate_blocks(window_surface)
 
@@ -202,7 +200,7 @@ while True:
 
     # for balls in ball_group:
     #     balls.check_hit_bound()
-    window_surface.fill(WHITE)
+    
     ball_group.draw(window_surface)
     
     for balls in ball_group:
