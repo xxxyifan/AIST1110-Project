@@ -29,6 +29,17 @@ class Pointer():
         return rot_image
 '''
 
+class Barriers():
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
+        self.height = self.width
+
+    def render(self, window_surface):
+        pygame.draw.rect (window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
+
+
 class Balls(pygame.sprite.Sprite):
     def __init__(self, width, height,pos_x, pos_y) -> None:
         super().__init__()
@@ -74,6 +85,30 @@ class Balls(pygame.sprite.Sprite):
 
 
 
+def generate_blocks(window_surface):
+    # Test Level
+    level_test = [
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0]
+    ]
+
+    block_generate = []
+
+    for i in range(len(level_test)):
+        for j in range(len(level_test[i])):
+            if (level_test[i][j] == 1):
+                block_generate.append(Barriers(i, j, 50, 50))
+    
+    for blocks in block_generate:
+        Barriers.render(blocks, window_surface)
 
 
 
@@ -109,11 +144,14 @@ ball_group.add(ball)
 is_degree_change = False
 change_value = 0
 
+# Generate Blocks (TEST)
+generate_blocks(window_surface)
+
 while True:
     clock.tick(FPS)
     rad = degree/180 * math.pi
-     
-     #move the pointer
+
+    #move the pointer
     if is_degree_change == True:
         degree += change_value
         if degree > 170:
