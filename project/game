@@ -1,9 +1,12 @@
 import sys
 import pygame
+import math
 from pygame.locals import QUIT
+from math import sin, cos
 
 pygame.init()
 
+'''
 class Pointer():
     def __init__(self, WINDOW_WIDTH, WINDOW_HEIGHT, fi) -> None:
         self.image = pygame.image.load(fi)
@@ -24,47 +27,106 @@ class Pointer():
         rot_rect.center = rot_image.get_rect().center
         rot_image = rot_image.subsurface(rot_rect).copy()
         return rot_image
+'''
 
 class Balls(pygame.sprite.Sprite):
-    def __init__(self, initial_position) -> None:
-        super().__init__(self)
-        self.image = pygame.Surface([30,30])
+    def __init__(self, width, height,pos_x, pos_y) -> None:
+        super().__init__()
+        self.image = pygame.Surface([width,height])
         self.image.fill((0,0,0))
         self.rect = self.image.get_rect()
-        self.rect.topleft = initial_position
+        self.rect.center = (pos_x, pos_y)
+        self.is_move = False
+        self.x_speed = 0
+        self.y_speed = 0
+        self.radius = radius
+
+    def is_move(self):
+        self.is_move = True
+        
+    def update(self):
+        if self.is_move == True:
+            pos_x = self.rect.center[0]
+            pos_y = self.rect.center[1]
+            pos_x += 3 * self.x_speed
+            pos_y -= 3 * self.y_speed
+            self.rect.center = (pos_x, pos_y)
+
+            if self.rect.center[1] >= WINDOW_HEIGHT+25:
+                ball.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
+                self.is_move = False
+
+            
+    def check_hit_bound(self):
+        if (ball.rect.center[0] <= self.radius and self.x_speed <= 0)or (ball.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
+                self.x_speed *= -1
+        if ball.rect.center[1] <= self.radius and self.y_speed >= 0 :
+                self.y_speed *= -1
+
+
+        
 
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 600
 WHITE = (255, 255, 255)
 fi_pointer = "files/pointer.jpg"
+degree = 90
+radius = 25
+clock = pygame.time.Clock()
 
 window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("GAME")
 window_surface.fill(WHITE)
 
+'''
 pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
 pointer.blit()
+'''
 
-ball = Balls((0,0))
+ball = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
+ball_group = pygame.sprite.Group()
+ball_group.add(ball)
 
-pygame.display.update()
 
 while True:
+    clock.tick(60)
+    rad = degree/180 * math.pi
+
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
+            ''''
             if event.key == ord("a"):
                 pointer.image = pointer.rot_center(1)
                 pointer.blit()
             if event.key == ord("d"):
                 pointer.image = pointer.rot_center(-1)
                 pointer.blit()
+            '''
 
-
-
+            if event.key == ord("a"):
+                if ball.is_move == False:
+                    degree += 2
+                    if degree > 170:
+                        degree = 170
+            if event.key == ord("d"):
+                if ball.is_move == False:
+                    degree -= 2
+                    if degree < 10:
+                        degree = 10
+            if event.key == ord("w"):
+                ball.x_speed = cos(rad)
+                ball.y_speed = sin(rad)
+                ball.is_move = True
 
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
 
+
+    ball.check_hit_bound()
     window_surface.fill(WHITE)
+    ball_group.draw(window_surface)
+    ball.update()
+    pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), WINDOW_HEIGHT-100*sin(rad)), 5)
+    pygame.display.update()
