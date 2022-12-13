@@ -1,6 +1,7 @@
 import sys
 import pygame
 import math
+import random
 from pygame.locals import QUIT
 from math import sin, cos
 
@@ -41,8 +42,8 @@ class Barriers():
 
 
 class Balls(pygame.sprite.Sprite):
-    def __init__(self, width, height,pos_x, pos_y) -> None:
-        super().__init__()
+    def __init__(self, width, height,pos_x, pos_y, group, block_group) -> None:
+        super().__init__(group)
         self.image = pygame.Surface([width,height])
         self.image.fill((0,0,0))
         self.rect = self.image.get_rect()
@@ -52,9 +53,23 @@ class Balls(pygame.sprite.Sprite):
         self.y_speed = 0
         self.radius = radius
         self.pause = 0
+        self.block = block_group
 
-    def is_move(self):
-        self.is_move = True
+    def collison(self):
+        #collison with other rect
+        overlap_sprites = pygame.sprite.spritecollide(self, self.block, True)
+
+        collision_tolerace = 10
+        if overlap_sprites:
+            for sprite in overlap_sprites:
+                if abs(sprite.rect.top - self.rect.bottom) < collision_tolerace and self.y_speed < 0:
+                    self.y_speed *= -1
+                if abs(sprite.rect.bottom - self.rect.top) < collision_tolerace and self.y_speed > 0:
+                    self.y_speed *= -1
+                if abs(sprite.rect.left - self.rect.right) < collision_tolerace and self.x_speed > 0:
+                    self.x_speed *= -1
+                if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
+                    self.x_speed *= -1
         
     def update(self):
         if self.is_move == True:
@@ -63,27 +78,21 @@ class Balls(pygame.sprite.Sprite):
                 pos_y = self.rect.center[1]
                 pos_x += 10 * self.x_speed
                 pos_y -= 10 * self.y_speed
-                self.rect.center = (pos_x, pos_y)
-                print(self, self.rect.center)
+                self.rect.center = (round(pos_x), round(pos_y))
+
+                #change moving dir with hit the border
                 if (ball.rect.center[0] <= self.radius and self.x_speed <= 0)or (ball.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
                     self.x_speed *= -1
                 if ball.rect.center[1] <= self.radius and self.y_speed >= 0 :
                     self.y_speed *= -1
+                #end the move when move to the bootom of the screen
                 if self.rect.center[1] >= WINDOW_HEIGHT+25:
                     ball.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
                     self.is_move = False
             else:
                 self.pause -= 1
 
-# 
-#     def check_hit_bound(self):
-#         if (ball.rect.center[0] <= self.radius and self.x_speed <= 0)or (ball.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
-#                 self.x_speed *= -1
-#         if ball.rect.center[1] <= self.radius and self.y_speed >= 0 :
-#                 self.y_speed *= -1
-# 
-
-
+        self.collison()
 
 def generate_blocks(window_surface):
     # Test Level
@@ -110,6 +119,12 @@ def generate_blocks(window_surface):
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
 
+class Block(pygame.sprite.Sprite):
+    def __init__(self, pos, group):
+        super().__init__(group)
+        self.image = pygame.Surface((50,50))
+        self.image.fill((0,255,0))
+        self.rect = self.image.get_rect(topleft = pos)
 
 
 WINDOW_WIDTH = 500
@@ -128,18 +143,19 @@ window_surface.fill(WHITE)
 
 # pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
 # pointer.blit()
+ball_group = pygame.sprite.GroupSingle()
+block_group = pygame.sprite.Group()
 
+ball = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, ball_group ,block_group)
+#ball_2 = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
 
-ball = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
-# ball_2 = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
-ball_group = pygame.sprite.Group()
 ball_group.add(ball)
-# ball_group.add(ball_2)
+#ball_group.add(ball_2)
 
-# ball_2.pause = FPS
-# for i in ball_group:
-#     print(i)
-
+#ball_2.pause = FPS
+#print(ball_group.sprites())
+    
+block = Block((50, 260), [block_group])
 
 is_degree_change = False
 change_value = 0
@@ -184,10 +200,9 @@ while True:
 
             #shoot
             if event.key == ord("w"):
-                for balls in ball_group:
-                    balls.x_speed = cos(rad)
-                    balls.y_speed = sin(rad)
-                    balls.is_move = True
+                ball.x_speed = cos(rad)
+                ball.y_speed = sin(rad)
+                ball.is_move = True
 
         #keyup to stop the pointer 
         if event.type == pygame.KEYUP:
@@ -202,9 +217,9 @@ while True:
     #     balls.check_hit_bound()
     
     ball_group.draw(window_surface)
-    
-    for balls in ball_group:
-        balls.update()
+    block_group.draw(window_surface)
+#    pygame.draw.rect(window_surface, (255, 0, 0), block)
+    ball_group.update()
 
     pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
     pygame.display.update()
