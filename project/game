@@ -30,52 +30,21 @@ class Pointer():
         return rot_image
 '''
 
-class Barriers(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, score):
-        super().__init__()
+class Barriers():
+    def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
         self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
         self.height = self.width
-        self.score = score
 
     def render(self, window_surface):
-        color = Barriers.color_pick(self)
-        pygame.draw.rect(window_surface, color, (self.x, self.y, self.width, self.height), 0)
-        self.rect = self.image.get_rect()
-    
-    def color_pick(self):
-        color = (255, 255, 255)
-        if (self.score < 10): # 1-10: Red
-            color = (255, 0, 0)
-        elif (self.score < 20): # 11-20: Orange
-            color = (255, 128, 0)
-        elif (self.score < 30): # 21-30: Yellow
-            color = (255, 255, 0)
-        elif (self.score < 40): # 31-40: Green
-            color = (0, 255, 0)
-        elif (self.score < 50): # 41-50: Cyan
-            color = (0, 255, 255)
-        elif (self.score < 60): #51-60: Blue
-            color = (0, 0, 255)
-        elif (self.score < 70): #61-70: Purple
-            color = (255, 0, 255)
-        else:
-            color = (0, 0, 0) # Otherwise: Black
-        return color
-    
-    def score_changer(self, change):
-        self.score += change
-    
-    def score_setter(self, set_score):
-        self.score = set_score
-            
+        pygame.draw.rect(window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
 
 
 class Balls(pygame.sprite.Sprite):
-    def __init__(self, width, height,pos_x, pos_y, group, block_group) -> None:
+    def __init__(self, radius, pos_x, pos_y, group, blk_and_ball_group, upgrade_group) -> None:
         super().__init__(group)
-        self.image = pygame.Surface([width,height])
+        self.image = pygame.Surface([radius*2,radius*2])
         self.image.fill((0,0,0))
         self.rect = self.image.get_rect()
         self.rect.center = (pos_x, pos_y)
@@ -84,11 +53,14 @@ class Balls(pygame.sprite.Sprite):
         self.y_speed = 0
         self.radius = radius
         self.pause = 0
-        self.block = block_group
+        self.block = blk_and_ball_group
+        self.upgrade = upgrade_group
 
     def collison(self):
         #collison with other rect
-        overlap_sprites = pygame.sprite.spritecollide(self, self.block, True)
+        overlap_sprites = pygame.sprite.spritecollide(self, self.block, False)
+        for i in pygame.sprite.spritecollide(self, self.upgrade, True):
+            overlap_sprites.append(i)
 
         collision_tolerace = 10
         if overlap_sprites:
@@ -101,6 +73,7 @@ class Balls(pygame.sprite.Sprite):
                     self.x_speed *= -1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
+                
         
     def update(self):
         if self.is_move == True:
@@ -112,9 +85,9 @@ class Balls(pygame.sprite.Sprite):
                 self.rect.center = (round(pos_x), round(pos_y))
 
                 #change moving dir with hit the border
-                if (ball.rect.center[0] <= self.radius and self.x_speed <= 0)or (ball.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
+                if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
                     self.x_speed *= -1
-                if ball.rect.center[1] <= self.radius and self.y_speed >= 0 :
+                if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                     self.y_speed *= -1
                 #end the move when move to the bootom of the screen
                 if self.rect.center[1] >= WINDOW_HEIGHT+25:
@@ -122,54 +95,49 @@ class Balls(pygame.sprite.Sprite):
                     self.is_move = False
             else:
                 self.pause -= 1
+        self.collison()
+
+class Upgrade(pygame.sprite.Sprite):
+    def __init__(self, pos, upgrade_type, groups) -> None:
+        super().__init__(groups)
+        self.upgrade_type = upgrade_type
+        self.image = pygame.Surface((50,50))
+        self.rect = self.image.get_rect(midtop = pos)
 
 
-# 
-#     def check_hit_bound(self):
-#         if (ball.rect.center[0] <= self.radius and self.x_speed <= 0)or (ball.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
-#                 self.x_speed *= -1
-#         if ball.rect.center[1] <= self.radius and self.y_speed >= 0 :
-#                 self.y_speed *= -1
-# 
 
-# Define an array which store the block location and block weighting
-blk_weight = [
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0]
-]
 
-# Generate Blocks on screen
-def generate_blocks(window_surface, blk_weight):
-    self.collison()
+def generate_blocks(window_surface):
+    # Test Level
+    level_test = [
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,1,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,0,0,0,0,0],
+        [0,0,0,1,1,1,1,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0]
+    ]
+
     block_generate = []
 
-    for i in range(len(blk_weight)):
-        for j in range(len(blk_weight[i])):
-            if (blk_weight[i][j] >= 1):
-                block_generate.append(Barriers(j * 50, i * 50, 50, 50, blk_weight[i][j]))
+    for i in range(len(level_test)):
+        for j in range(len(level_test[i])):
+            if (level_test[i][j] == 1):
+                block_generate.append(Barriers(j * 50, i * 50, 50, 50))
     
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
 
-# Move blocks downward after each round ends
-def round_update(blk_weight):
-    for i in range(len(blk_weight)):
-        for j in range(len(blk_weight[i])):
-            if j == len(blk_weight[i]):
-                blk_weight[i][j] = 0
-            else:
-                blk_weight[i][j] = blk_weight[i][j + 1]
-
-# Random new blocks
-
+class Block(pygame.sprite.Sprite):
+    def __init__(self, pos, group):
+        super().__init__(group)
+        self.image = pygame.Surface((50,50))
+        self.image.fill((0,255,0))
+        self.rect = self.image.get_rect(topleft = pos)
 
 
 WINDOW_WIDTH = 500
@@ -188,24 +156,26 @@ window_surface.fill(WHITE)
 
 # pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
 # pointer.blit()
+all_sprites_gruop = pygame.sprite.Group()
 ball_group = pygame.sprite.GroupSingle()
 block_group = pygame.sprite.Group()
+upgrade_group = pygame.sprite.Group()
 
-ball = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, ball_group ,block_group)
-#ball_2 = Balls(50,50, WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
+#ball
+ball = Balls(radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, [all_sprites_gruop ,ball_group], all_sprites_gruop, upgrade_group)
 
-ball_group.add(ball)
-#ball_group.add(ball_2)
 
-#ball_2.pause = FPS
-#print(ball_group.sprites())
-    
-block = Block((50, 260), [block_group])
+#block
+block = Block((50, 260), [all_sprites_gruop, block_group])
 
+#upgrade
+upgrade_type = random.choice(["add_damage", "ball_split"])
+upgrade = Upgrade((450,150), upgrade_type, upgrade_group)
+# variable for change degree
 is_degree_change = False
 change_value = 0
 
-
+#main game loop
 while True:
     clock.tick(FPS)
     rad = degree/180 * math.pi
@@ -261,8 +231,8 @@ while True:
     # for balls in ball_group:
     #     balls.check_hit_bound()
     
-    ball_group.draw(window_surface)
-    block_group.draw(window_surface)
+    all_sprites_gruop.draw(window_surface)
+    upgrade_group.draw(window_surface)
 #    pygame.draw.rect(window_surface, (255, 0, 0), block)
     ball_group.update()
 
