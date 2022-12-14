@@ -8,6 +8,7 @@ import time
 
 pygame.init()
 
+
 '''
 class Pointer():
     def __init__(self, WINDOW_WIDTH, WINDOW_HEIGHT, fi) -> None:
@@ -31,7 +32,120 @@ class Pointer():
         return rot_image
 '''
 
-# TESTING USE
+class Barriers():
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
+        self.height = self.width
+
+    def render(self, window_surface):
+        pygame.draw.rect(window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
+
+
+class Balls(pygame.sprite.Sprite):
+    def __init__(self, radius, pos_x, pos_y, round, group, blk_and_ball_group, upgrade_group) -> None:
+        super().__init__(group)
+        self.image = pygame.Surface([radius*2,radius*2])
+        self.image.fill((0,0,0))
+        self.rect = self.image.get_rect()
+        self.rect.center = (pos_x, pos_y)
+        self.is_move = False
+        self.x_speed = 0
+        self.y_speed = 0
+        self.speed = 9
+        self.radius = radius
+        self.block = blk_and_ball_group
+        self.upgrade = upgrade_group
+        self.round = round_
+
+    def collison(self):
+        #collison with other rect
+        overlap_sprites = pygame.sprite.spritecollide(self, self.block, False)
+        collision_tolerace = self.speed
+        if overlap_sprites:
+            for sprite in overlap_sprites:
+                if abs(sprite.rect.top - self.rect.bottom) < collision_tolerace and self.y_speed < 0:
+                    self.y_speed *= -1
+                if abs(sprite.rect.bottom - self.rect.top) < collision_tolerace and self.y_speed > 0:
+                    self.y_speed *= -1
+                if abs(sprite.rect.left - self.rect.right) < collision_tolerace and self.x_speed > 0:
+                    self.x_speed *= -1
+                if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
+                    self.x_speed *= -1
+
+        #collison with upgrade
+        opverlap_upgrade = pygame.sprite.spritecollide(self, self.upgrade, True)
+        if opverlap_upgrade:
+            for upgrades in opverlap_upgrade:
+                print(upgrades.upgrade_type)
+                if upgrades.upgrade_type == "ball_split":
+                    tmp_ball = Tmp_Balls(self.radius, self.rect.midright[0]-self.radius-1, self.rect.midright[1], self.round, self.block, self.block, self.upgrade)
+                    direction = random.choice(["x"])
+                    if direction == "x":
+                        tmp_ball.x_speed = self.x_speed * -1
+                        tmp_ball.y_speed = self.y_speed
+                    else:
+                        tmp_ball.x_speed = self.x_speed
+                        tmp_ball.y_speed = self.y_speed * -1
+                    tmp_ball.speed = random.randint(11,15)
+                    tmp_ball.is_move = True
+
+    def update(self):
+        if self.is_move == True:
+            pos_x = self.rect.center[0]
+            pos_y = self.rect.center[1]
+            pos_x += self.speed * self.x_speed
+            pos_y -= self.speed * self.y_speed
+            self.rect.center = (round(pos_x), round(pos_y))
+
+            #change moving dir with hit the border
+            if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
+                self.x_speed *= -1
+            if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
+                self.y_speed *= -1
+            #end the move when move to the bootom of the screen
+            if self.rect.center[1] >= WINDOW_HEIGHT+25:
+                self.is_move = False
+                self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
+                round_update(blk_weight)
+                create_blocks(blk_weight, self.round)
+                generate_blocks(window_surface, blk_weight)
+                self.round += 1
+        self.collison()
+
+class Upgrade(pygame.sprite.Sprite):
+    def __init__(self, pos, upgrade_type, groups) -> None:
+        super().__init__(groups)
+        self.upgrade_type = upgrade_type
+        self.image = pygame.Surface((50,50))
+        self.rect = self.image.get_rect(midtop = pos)
+
+class Tmp_Balls(Balls, pygame.sprite.Sprite):
+    def __init__(self, radius, pos_x, pos_y, round, group, blk_and_ball_group, upgrade_group):
+        Balls.__init__(self, radius, pos_x, pos_y, round ,group, blk_and_ball_group, upgrade_group)
+        pygame.sprite.Sprite.__init__(group)
+        self.image.fill((80, 80, 80))
+    def update(self):
+        if self.is_move == True:
+            pos_x = self.rect.center[0]
+            pos_y = self.rect.center[1]
+            pos_x += self.speed * self.x_speed
+            pos_y -= self.speed * self.y_speed
+            self.rect.center = (round(pos_x), round(pos_y))
+
+            #change moving dir with hit the border
+            if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
+                self.x_speed *= -1
+            if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
+                self.y_speed *= -1
+            #end the move when move to the bootom of the screen
+            if self.rect.center[1] >= WINDOW_HEIGHT+100:
+                self.kill()
+        self.collison()
+
+
+#TESTING USE
 class Block(pygame.sprite.Sprite):
     def __init__(self, pos, group):
         super().__init__(group)
@@ -40,8 +154,8 @@ class Block(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
 
 class Barriers(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, score):
-        super().__init__()
+    def __init__(self, x, y, width, height, score, group):
+        super().__init__(group)
         self.x = x
         self.y = y
         self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
@@ -49,12 +163,13 @@ class Barriers(pygame.sprite.Sprite):
         self.score = score
         self.image = pygame.Surface((self.width,self.height))
         self.image.fill((Barriers.color_pick(self)))
+        self.rect = self.image.get_rect(topleft = (self.x, self.y))
 
     def render(self, window_surface):
         color = Barriers.color_pick(self)
         pygame.draw.rect(window_surface, color, (self.x, self.y, self.width, self.height), 0)
-        self.rect = self.image.get_rect(topleft = (self.x, self.y))
-    
+        
+
     def color_pick(self):
         color = (255, 255, 255)
         if (self.score < 10): # 1-10: Red
@@ -74,105 +189,28 @@ class Barriers(pygame.sprite.Sprite):
         else:
             color = (0, 0, 0) # Otherwise: Black
         return color
-    
+
     def score_changer(self, change):
         self.score += change
-    
+
     def score_setter(self, set_score):
         self.score = set_score
 
 
-class Balls(pygame.sprite.Sprite):
-    def __init__(self, radius, pos_x, pos_y, group, blk_and_ball_group, upgrade_group) -> None:
-        super().__init__(group)
-        self.image = pygame.Surface([radius*2,radius*2])
-        self.image.fill((0,0,0))
-        self.rect = self.image.get_rect()
-        self.rect.center = (pos_x, pos_y)
-        self.is_move = False
-        self.x_speed = 0
-        self.y_speed = 0
-        self.radius = radius
-        self.pause = 0
-        self.block = blk_and_ball_group
-        self.upgrade = upgrade_group
-
-    def collison(self):
-        #collison with other rect
-        overlap_sprites = pygame.sprite.spritecollide(self, self.block, False)
-        for i in pygame.sprite.spritecollide(self, self.upgrade, True):
-            overlap_sprites.append(i)
-
-        collision_tolerace = 10
-        if overlap_sprites:
-            for sprite in overlap_sprites:
-                if abs(sprite.rect.top - self.rect.bottom) < collision_tolerace and self.y_speed < 0:
-                    self.y_speed *= -1
-                if abs(sprite.rect.bottom - self.rect.top) < collision_tolerace and self.y_speed > 0:
-                    self.y_speed *= -1
-                if abs(sprite.rect.left - self.rect.right) < collision_tolerace and self.x_speed > 0:
-                    self.x_speed *= -1
-                if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
-                    self.x_speed *= -1
-                
-        
-    def update(self):
-        if self.is_move == True:
-            if self.pause == 0:
-                pos_x = self.rect.center[0]
-                pos_y = self.rect.center[1]
-                pos_x += 10 * self.x_speed
-                pos_y -= 10 * self.y_speed
-                self.rect.center = (round(pos_x), round(pos_y))
-
-                #change moving dir with hit the border
-                if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
-                    self.x_speed *= -1
-                if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
-                    self.y_speed *= -1
-                #end the move when move to the bootom of the screen
-                if self.rect.center[1] >= WINDOW_HEIGHT+25:
-                    ball.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
-                    self.is_move = False
-            else:
-                self.pause -= 1
-        self.collison()
-
-class Upgrade(pygame.sprite.Sprite):
-    def __init__(self, pos, upgrade_type, groups) -> None:
-        super().__init__(groups)
-        self.upgrade_type = upgrade_type
-        self.image = pygame.Surface((50,50))
-        self.rect = self.image.get_rect(midtop = pos)
-
-
-
-
-# Define an array which store the block location and block weighting
-blk_weight = [
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0]
-]
-
 # Generate Blocks on screen
 def generate_blocks(window_surface, blk_weight):
+
     block_generate = []
 
     for i in range(len(blk_weight)):
         for j in range(len(blk_weight[i])):
             if (blk_weight[i][j] >= 1):
-                block_generate.append(Barriers(i * 50, j * 50, 50, 50, blk_weight[i][j]))
+                block_generate.append(Barriers(i * 50, j * 50, 50, 50, blk_weight[i][j], [all_sprites_gruop, block_group]))
     
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
+
+
 
 # Move blocks downward after each round ends
 def round_update(blk_weight):
@@ -224,10 +262,7 @@ def create_blocks(blk_weight, round):
             end_loc = start_loc + max_blk
         for i in range(start_loc, end_loc + 1):
             blk_weight[i][0] = random.randint(1, max_weight)
-    
     return blk_weight
-
-
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 600
@@ -237,12 +272,34 @@ fi_pointer = "files/pointer.jpg"
 degree = 90
 radius = 25
 clock = pygame.time.Clock()
-round = 0 #Increment by 1 after each round
+round_ = 0
+
+# Define an array which store the block location and block weighting
+blk_weight = [
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0]
+]
 
 window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("GAME")
 window_surface.fill(WHITE)
 
+
+
+    # Test ONLY 
+    # round_update(blk_weight)
+    # create_blocks(blk_weight, round)
+    # generate_blocks(window_surface, blk_weight)
+    # time.sleep(1)
+    # round += 1
 
 # pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
 # pointer.blit()
@@ -250,17 +307,24 @@ all_sprites_gruop = pygame.sprite.Group()
 ball_group = pygame.sprite.GroupSingle()
 block_group = pygame.sprite.Group()
 upgrade_group = pygame.sprite.Group()
+tmp_ball_group = pygame.sprite.Group()
 
 #ball
-ball = Balls(radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, [all_sprites_gruop ,ball_group], all_sprites_gruop, upgrade_group)
+ball = Balls(radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, round_,[all_sprites_gruop ,ball_group, tmp_ball_group], all_sprites_gruop, upgrade_group)
 
 
 #block
-block = Block((50, 260), [all_sprites_gruop, block_group])
+# block_1 = Block((50, 260), [all_sprites_gruop, block_group])
+# block_2 = Block((50, 100), [all_sprites_gruop, block_group])
+# block_3 = Block((100, 260), [all_sprites_gruop, block_group])
+# block_4 = Block((400, 400), [all_sprites_gruop, block_group])
 
 #upgrade
-upgrade_type = random.choice(["add_damage", "ball_split"])
-upgrade = Upgrade((450,150), upgrade_type, upgrade_group)
+# upgrade_type = random.choice(["add_damage", "ball_split"])
+# upgrade_1 = Upgrade((200,150), "ball_split", upgrade_group)
+# upgrade_2 = Upgrade((400,50), "ball_split", upgrade_group)
+# upgrade_3 = Upgrade((100,500), "ball_split", upgrade_group)
+
 # variable for change degree
 is_degree_change = False
 change_value = 0
@@ -272,14 +336,8 @@ while True:
 
     window_surface.fill(WHITE)
 
-    # Test ONLY 
-    # round_update(blk_weight)
-    # create_blocks(blk_weight, round)
-    # generate_blocks(window_surface, blk_weight)
-    # time.sleep(1)
-    # round += 1
-
-
+    # Generate Blocks (TEST)
+    generate_blocks(window_surface, blk_weight)
 
     #move the pointer
     if is_degree_change == True:
@@ -299,14 +357,13 @@ while True:
                 pointer.image = pointer.rot_center(-1)
                 pointer.blit()
             '''
-            
 
             # Generate Blocks (TEST)
             if event.key == pygame.K_SPACE:
                 round_update(blk_weight)
-                create_blocks(blk_weight, round)
+                create_blocks(blk_weight, round_)
                 generate_blocks(window_surface, blk_weight)
-                round += 1
+                round_ += 1
 
             #change the angle 
             if event.key == ord("a"):
@@ -320,9 +377,10 @@ while True:
 
             #shoot
             if event.key == ord("w"):
-                ball.x_speed = cos(rad)
-                ball.y_speed = sin(rad)
-                ball.is_move = True
+                if ball.is_move == False:
+                    ball.x_speed = cos(rad)
+                    ball.y_speed = sin(rad)
+                    ball.is_move = True
 
         #keyup to stop the pointer 
         if event.type == pygame.KEYUP:
@@ -339,7 +397,7 @@ while True:
     all_sprites_gruop.draw(window_surface)
     upgrade_group.draw(window_surface)
 #    pygame.draw.rect(window_surface, (255, 0, 0), block)
-    ball_group.update()
+    all_sprites_gruop.update()
 
     pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
     pygame.display.update()
