@@ -4,6 +4,7 @@ import math
 import random
 from pygame.locals import QUIT
 from math import sin, cos
+import time
 
 pygame.init()
 
@@ -46,6 +47,8 @@ class Barriers(pygame.sprite.Sprite):
         self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
         self.height = self.width
         self.score = score
+        self.image = pygame.Surface((self.width,self.height))
+        self.image.fill((Barriers.color_pick(self)))
 
     def render(self, window_surface):
         color = Barriers.color_pick(self)
@@ -166,7 +169,7 @@ def generate_blocks(window_surface, blk_weight):
     for i in range(len(blk_weight)):
         for j in range(len(blk_weight[i])):
             if (blk_weight[i][j] >= 1):
-                block_generate.append(Barriers(j * 50, i * 50, 50, 50, blk_weight[i][j]))
+                block_generate.append(Barriers(i * 50, j * 50, 50, 50, blk_weight[i][j]))
     
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
@@ -174,11 +177,11 @@ def generate_blocks(window_surface, blk_weight):
 # Move blocks downward after each round ends
 def round_update(blk_weight):
     for i in range(len(blk_weight)):
-        for j in range(len(blk_weight[i])):
-            if j == len(blk_weight[i]):
+        for j in range(len(blk_weight[i])-1, -1, -1):
+            if j == 0:
                 blk_weight[i][j] = 0
             else:
-                blk_weight[i][j] = blk_weight[i][j + 1]
+                blk_weight[i][j] = blk_weight[i][j - 1]
 
 # Random new blocks
 def create_blocks(blk_weight, round):
@@ -207,9 +210,23 @@ def create_blocks(blk_weight, round):
     # Avoid too high weighting on blocks at beginning
     max_weight = (round // 10) + 1
 
-    create_loc = []
+    copy_last = random.randint(0, 1) # 0: Not Copy Last Row, 1: Copy Pattern of Last Row
 
-    # for a in range(num_blk):
+    if (copy_last == 1 and round > 20):
+        for i in range(len(blk_weight)):
+            if (blk_weight[i][1] > 1):
+                blk_weight[i][0] = random.randint(1, max_weight)
+    else:
+        start_loc = random.randint(0, 9)
+        if (start_loc + max_blk > 9):
+            end_loc = 9
+        else:
+            end_loc = start_loc + max_blk
+        for i in range(start_loc, end_loc + 1):
+            blk_weight[i][0] = random.randint(1, max_weight)
+    
+    return blk_weight
+
 
 
 WINDOW_WIDTH = 500
@@ -220,6 +237,7 @@ fi_pointer = "files/pointer.jpg"
 degree = 90
 radius = 25
 clock = pygame.time.Clock()
+round = 0 #Increment by 1 after each round
 
 window_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("GAME")
@@ -254,8 +272,14 @@ while True:
 
     window_surface.fill(WHITE)
 
-    # Generate Blocks (TEST)
-    generate_blocks(window_surface)
+    # Test ONLY 
+    # round_update(blk_weight)
+    # create_blocks(blk_weight, round)
+    # generate_blocks(window_surface, blk_weight)
+    # time.sleep(1)
+    # round += 1
+
+
 
     #move the pointer
     if is_degree_change == True:
@@ -275,6 +299,15 @@ while True:
                 pointer.image = pointer.rot_center(-1)
                 pointer.blit()
             '''
+            
+
+            # Generate Blocks (TEST)
+            if event.key == pygame.K_SPACE:
+                round_update(blk_weight)
+                create_blocks(blk_weight, round)
+                generate_blocks(window_surface, blk_weight)
+                round += 1
+
             #change the angle 
             if event.key == ord("a"):
                 if ball.is_move == False:
