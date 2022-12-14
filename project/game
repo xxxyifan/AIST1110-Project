@@ -30,15 +30,53 @@ class Pointer():
         return rot_image
 '''
 
-class Barriers():
-    def __init__(self, x, y, width, height):
+# TESTING USE
+class Block(pygame.sprite.Sprite):
+    def __init__(self, pos, group):
+        super().__init__(group)
+        self.image = pygame.Surface((50,50))
+        self.image.fill((0,255,0))
+        self.rect = self.image.get_rect(topleft = pos)
+
+class Barriers(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height, score):
+        super().__init__()
         self.x = x
         self.y = y
         self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
         self.height = self.width
+        self.score = score
 
     def render(self, window_surface):
-        pygame.draw.rect(window_surface, (100,0,0), (self.x, self.y, self.width, self.height), 0) # Set Block as Red as color (temp)
+        color = Barriers.color_pick(self)
+        pygame.draw.rect(window_surface, color, (self.x, self.y, self.width, self.height), 0)
+        self.rect = self.image.get_rect(topleft = pos)
+    
+    def color_pick(self):
+        color = (255, 255, 255)
+        if (self.score < 10): # 1-10: Red
+            color = (255, 0, 0)
+        elif (self.score < 20): # 11-20: Orange
+            color = (255, 128, 0)
+        elif (self.score < 30): # 21-30: Yellow
+            color = (255, 255, 0)
+        elif (self.score < 40): # 31-40: Green
+            color = (0, 255, 0)
+        elif (self.score < 50): # 41-50: Cyan
+            color = (0, 255, 255)
+        elif (self.score < 60): #51-60: Blue
+            color = (0, 0, 255)
+        elif (self.score < 70): #61-70: Purple
+            color = (255, 0, 255)
+        else:
+            color = (0, 0, 0) # Otherwise: Black
+        return color
+    
+    def score_changer(self, change):
+        self.score += change
+    
+    def score_setter(self, set_score):
+        self.score = set_score
 
 
 class Balls(pygame.sprite.Sprite):
@@ -107,37 +145,42 @@ class Upgrade(pygame.sprite.Sprite):
 
 
 
-def generate_blocks(window_surface):
-    # Test Level
-    level_test = [
-        [0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0],
-        [0,0,1,1,1,0,0,0,0,0],
-        [0,0,0,1,1,0,0,0,0,0],
-        [0,0,0,1,1,0,0,0,0,0],
-        [0,0,0,1,1,0,0,0,0,0],
-        [0,0,0,1,1,1,1,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0]
-    ]
+# Define an array which store the block location and block weighting
+blk_weight = [
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0]
+]
 
+# Generate Blocks on screen
+def generate_blocks(window_surface, blk_weight):
     block_generate = []
 
-    for i in range(len(level_test)):
-        for j in range(len(level_test[i])):
-            if (level_test[i][j] == 1):
-                block_generate.append(Barriers(j * 50, i * 50, 50, 50))
+    for i in range(len(blk_weight)):
+        for j in range(len(blk_weight[i])):
+            if (blk_weight[i][j] >= 1):
+                block_generate.append(Barriers(j * 50, i * 50, 50, 50, blk_weight[i][j]))
     
     for blocks in block_generate:
         Barriers.render(blocks, window_surface)
 
-class Block(pygame.sprite.Sprite):
-    def __init__(self, pos, group):
-        super().__init__(group)
-        self.image = pygame.Surface((50,50))
-        self.image.fill((0,255,0))
-        self.rect = self.image.get_rect(topleft = pos)
+# Move blocks downward after each round ends
+def round_update(blk_weight):
+    for i in range(len(blk_weight)):
+        for j in range(len(blk_weight[i])):
+            if j == len(blk_weight[i]):
+                blk_weight[i][j] = 0
+            else:
+                blk_weight[i][j] = blk_weight[i][j + 1]
+
+# Random new blocks
 
 
 WINDOW_WIDTH = 500
