@@ -181,6 +181,28 @@ def round_update(blk_weight):
                 blk_weight[i][j] = blk_weight[i][j + 1]
 
 # Random new blocks
+def create_blocks(blk_weight, round):
+    max_blk = 0
+    # Avoid too many blocks in the beginning
+    if round < 10:
+        max_blk = 1
+    elif round < 20:
+        max_blk = 2
+    elif round < 30:
+        max_blk = 3
+    elif round < 40:
+        max_blk = 4
+    elif round < 50:
+        max_blk = 5
+    elif round < 60:
+        max_blk = 6
+    elif round < 70:
+        max_blk = 7
+    elif round < 80:
+        max_blk = 8
+    else:
+        max_blk = 9
+    # num_blk = random()
 
 
 WINDOW_WIDTH = 500
