@@ -202,7 +202,14 @@ def create_blocks(blk_weight, round):
         max_blk = 8
     else:
         max_blk = 9
-    # num_blk = random()
+    num_blk = random.randint(1, max_blk)
+
+    # Avoid too high weighting on blocks at beginning
+    max_weight = (round // 10) + 1
+
+    create_loc = []
+
+    # for a in range(num_blk):
 
 
 WINDOW_WIDTH = 500
