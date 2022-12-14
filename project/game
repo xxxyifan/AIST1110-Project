@@ -50,7 +50,7 @@ class Barriers(pygame.sprite.Sprite):
     def render(self, window_surface):
         color = Barriers.color_pick(self)
         pygame.draw.rect(window_surface, color, (self.x, self.y, self.width, self.height), 0)
-        self.rect = self.image.get_rect(topleft = pos)
+        self.rect = self.image.get_rect(topleft = (self.x, self.y))
     
     def color_pick(self):
         color = (255, 255, 255)
