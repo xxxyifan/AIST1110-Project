@@ -4,6 +4,7 @@ import math
 import random
 from pygame.locals import QUIT
 from math import sin, cos
+from copy import copy, deepcopy
 import time
 
 pygame.init()
@@ -60,15 +61,26 @@ class Balls(pygame.sprite.Sprite):
         self.upgrade = upgrade_group
         self.group = group
         self.round = round
+        self.org_board = deepcopy(blk_weight)
 
     def collison(self):
         #collison with other rect
+
         overlap_sprites = pygame.sprite.spritecollide(self, self.block, False)
         if overlap_sprites:
             for sprite in overlap_sprites:
-                sprite.score -= 1
-                if sprite.score <= 0:
-                    sprite.kill()
+                if blk_weight[sprite.x//50][sprite.y//50] == self.org_board[sprite.x//50][sprite.y//50]:
+                    blk_weight[sprite.x//50][sprite.y//50] -= 1
+                    if blk_weight[sprite.x//50][sprite.y//50] < 1:
+                        sprite.kill()
+        else:
+            self.org_board = deepcopy(blk_weight)
+
+            
+            print("after collison")  
+            for i in blk_weight:
+                print(i)
+
 
         for i in pygame.sprite.spritecollide(self, self.ball, False):
             overlap_sprites.append(i)
@@ -102,6 +114,10 @@ class Balls(pygame.sprite.Sprite):
                     tmp_ball.speed = random.randint(11,15)
                     tmp_ball.is_move = True
 
+    def kill_all_block(self):
+        for sprite in self.block:
+            sprite.kill()
+
     def update(self):
         if self.is_move == True:
             pos_x = self.rect.center[0]
@@ -115,15 +131,20 @@ class Balls(pygame.sprite.Sprite):
                 self.x_speed *= -1
             if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                 self.y_speed *= -1
+            
+            #check collison
+            self.collison()
+
             #end the move when move to the bootom of the screen
-            if self.rect.center[1] >= WINDOW_HEIGHT+25:
+            if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.is_move = False
                 self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
+                self.kill_all_block()
                 round_update(blk_weight)
                 create_blocks(blk_weight, self.round)
                 generate_blocks(window_surface, blk_weight)
+                self.org_board = deepcopy(blk_weight)
                 self.round += 1
-        self.collison()
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(self, pos, upgrade_type, upgrade_group, group) -> None:
@@ -145,6 +166,9 @@ class Tmp_Balls(Balls, pygame.sprite.Sprite):
             pos_y -= self.speed * self.y_speed
             self.rect.center = (round(pos_x), round(pos_y))
 
+            #check collison
+            self.collison()
+
             #change moving dir with hit the border
             if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
                 self.x_speed *= -1
@@ -153,7 +177,7 @@ class Tmp_Balls(Balls, pygame.sprite.Sprite):
             #end the move when move to the bootom of the screen
             if self.rect.center[1] >= WINDOW_HEIGHT+100:
                 self.kill()
-        self.collison()
+        
 
 
 #TESTING USE
@@ -175,6 +199,7 @@ class Barriers(pygame.sprite.Sprite):
         self.image = pygame.Surface((self.width,self.height))
         self.image.fill((Barriers.color_pick(self)))
         self.rect = self.image.get_rect(topleft = (self.x, self.y))
+        self.block_group = block_group
 
     # def render(self, window_surface):
     #     color = Barriers.color_pick(self)
@@ -207,16 +232,13 @@ class Barriers(pygame.sprite.Sprite):
     def score_setter(self, set_score):
         self.score = set_score
 
-
 # Generate Blocks on screen
 def generate_blocks(window_surface, blk_weight):
-
-    block_generate = []
 
     for i in range(len(blk_weight)):
         for j in range(len(blk_weight[i])):
             if (blk_weight[i][j] >= 1):
-                block_generate.append(Barriers(i * 50, j * 50, 50, 50, blk_weight[i][j], block_group, all_sprites_gruop))
+                Barriers(i * 50, j * 50, 50, 50, blk_weight[i][j], block_group, all_sprites_gruop)
     
     # for blocks in block_generate:
     #     Barriers.render(blocks, window_surface)
@@ -231,6 +253,8 @@ def round_update(blk_weight):
                 blk_weight[i][j] = 0
             else:
                 blk_weight[i][j] = blk_weight[i][j - 1]
+                if blk_weight[i][j] < 0:
+                    blk_weight[i][j] = 0
 
 # Random new blocks
 def create_blocks(blk_weight, round):
@@ -273,6 +297,9 @@ def create_blocks(blk_weight, round):
             end_loc = start_loc + max_blk
         for i in range(start_loc, end_loc + 1):
             blk_weight[i][0] = random.randint(1, max_weight)
+    print("before collison")   
+    for i in blk_weight:
+        print(i)
     return blk_weight
 
 WINDOW_WIDTH = 500
@@ -332,10 +359,10 @@ ball = Balls(radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, round_, all_sprites_gruop
 # block_4 = Block((400, 400), [all_sprites_gruop, block_group])
 
 #upgrade
-upgrade_type = random.choice(["add_damage", "ball_split"])
-upgrade_1 = Upgrade((200,150), "ball_split", upgrade_group, all_sprites_gruop)
-upgrade_2 = Upgrade((400,50), "ball_split", upgrade_group, all_sprites_gruop)
-# upgrade_3 = Upgrade((100,500), "ball_split", upgrade_group)
+# upgrade_type = random.choice(["add_damage", "ball_split"])
+# upgrade_1 = Upgrade((200,150), "ball_split", upgrade_group, all_sprites_gruop)
+# upgrade_2 = Upgrade((400,50), "ball_split", upgrade_group, all_sprites_gruop)
+# upgrade_3 = Upgrade((100,500), "ball_split", upgrade_group, all_sprites_gruop)
 
 # variable for change degree
 is_degree_change = False
@@ -345,11 +372,6 @@ change_value = 0
 while True:
     clock.tick(FPS)
     rad = degree/180 * math.pi
-
-    window_surface.fill(WHITE)
-
-    # Generate Blocks (TEST)
-    generate_blocks(window_surface, blk_weight)
 
     #move the pointer
     if is_degree_change == True:
@@ -403,9 +425,8 @@ while True:
             pygame.quit()
             sys.exit()
 
-    
-    all_sprites_gruop.draw(window_surface)
+    window_surface.fill(WHITE)
     all_sprites_gruop.update()
-
+    all_sprites_gruop.draw(window_surface)
     pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
     pygame.display.update()
