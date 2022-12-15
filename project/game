@@ -208,7 +208,7 @@ class Barriers(pygame.sprite.Sprite):
     #     color = Barriers.color_pick(self)
     #     pygame.draw.rect(window_surface, color, (self.x, self.y, self.width, self.height), 0)
         
-
+    # Choose Different Texture at different score
     def color_pick(self):
         # color = (255, 255, 255)
         if (self.score < 10): # 1-10: Red
@@ -245,11 +245,11 @@ class Barriers(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         return
 
-    def score_changer(self, change):
-        self.score += change
+    # def score_changer(self, change):
+        # self.score += change
 
-    def score_setter(self, set_score):
-        self.score = set_score
+    # def score_setter(self, set_score):
+        # self.score = set_score
 
 # Generate Blocks on screen
 def generate_blocks(window_surface, blk_weight):
@@ -444,7 +444,10 @@ while True:
             pygame.quit()
             sys.exit()
 
-    window_surface.fill(WHITE)
+    # window_surface.fill(WHITE)
+    bg = pygame.image.load("files/image/Full-Background.png").convert()
+    bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
+    window_surface.blit(bg, (0, 0))
     all_sprites_gruop.update()
     all_sprites_gruop.draw(window_surface)
     pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
