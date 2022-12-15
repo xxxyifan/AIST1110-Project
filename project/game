@@ -400,6 +400,7 @@ while True:
         if degree < 10:
             degree = 10
 
+    # Detect Game Event
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             ''''
@@ -411,7 +412,7 @@ while True:
                 pointer.blit()
             '''
 
-            # Generate Blocks (TEST)
+            # Generate Blocks (TEST): Press Space Bar to move barriers downward
             if event.key == pygame.K_SPACE:
                 round_update(blk_weight)
                 create_blocks(blk_weight, round_)
@@ -445,9 +446,20 @@ while True:
             sys.exit()
 
     # window_surface.fill(WHITE)
+
+    # Print Background
     bg = pygame.image.load("files/image/Full-Background.png").convert()
     bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
     window_surface.blit(bg, (0, 0))
+
+    # Print Round Number
+    pygame.font.init()
+    font = pygame.font.SysFont('Comic Sans MS', 14)
+    text_gen = font.render('Round: ' + str(ball.round), False, (255, 255, 255))
+    window_surface.blit(text_gen, (10, WINDOW_HEIGHT - 25))
+
+
+
     all_sprites_gruop.update()
     all_sprites_gruop.draw(window_surface)
     pygame.draw.line(window_surface, (255, 0, 0), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
