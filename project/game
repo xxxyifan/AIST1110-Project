@@ -137,11 +137,16 @@ class Balls(pygame.sprite.Sprite):
             all_out = True
             if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.is_move = False
+                break
+
             for sprite in self.ball:
                 if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
                     all_out = False
             if all_out == True:
-                self.change_round()
+                if check_end(blk_weight) == False:
+                    self.change_round()
+                else:
+                    game.over()
 
     def change_round(self):
         self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
@@ -151,6 +156,7 @@ class Balls(pygame.sprite.Sprite):
         generate_blocks(window_surface, blk_weight)
         self.org_board = deepcopy(blk_weight)
         self.round += 1
+
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(self, pos, upgrade_type, upgrade_group, group) -> None:
@@ -181,15 +187,22 @@ class Tmp_Balls(Balls):
                 self.x_speed *= -1
             if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                 self.y_speed *= -1
+                
             #end the move when move to the bootom of the screen
             all_out = True
             if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.kill()
+                
             for sprite in self.ball:
                 if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
                     all_out = False
+                    break
+                    
             if all_out == True:
-                ball.change_round()
+                if check_end(blk_weight) == False:
+                        ball.change_round()
+                    else:
+                        game.over()
 
         
 
@@ -324,6 +337,28 @@ def create_blocks(blk_weight, round):
     for i in blk_weight:
         print(i)
     return blk_weight
+
+def check_end(blk_weight):
+    for a in range(len(blk_weight)):
+        if blk_weight[a][9] > 0:
+            return True
+    
+    return False
+
+def game_over():
+    window_surface.fill((0, 0, 0))
+    font = pygame.font.SysFont('Garamond', 50)
+    message = font.render("Game Over !", False, (255, 0, 0))
+    round_end = font.render('Round: ' + str(ball.round), False, (255, 0, 0))
+    window_surface.blit(message, (60, WINDOW_HEIGHT // 2))
+    window_surface.blit(round_end, (60, WINDOW_HEIGHT // 2 + 40))
+    pygame.display.update()
+    time.sleep(10)
+    pygame.display.quit()
+    pygame.quit()
+
+
+
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 600
@@ -479,5 +514,17 @@ while True:
     all_sprites_gruop.draw(window_surface)
 
     pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-radius), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-radius)-100*sin(rad)), 3)
-    # draw_dashed_line(window_surface, WHITE, (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), width=3, dash_length=10)
+
+    # Print Block Number
+    for i in range(len(blk_weight)):
+        for j in range(len(blk_weight[i])):
+            if blk_weight[j][i] > 0:
+                block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
+                window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
+    
+    if (check_end == True):
+        break
+
     pygame.display.update()
+
+
