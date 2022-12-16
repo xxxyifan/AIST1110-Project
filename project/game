@@ -142,11 +142,14 @@ class Balls(pygame.sprite.Sprite):
                 self.is_move = False
                 self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
                 self.kill_all_block()
-                round_update(blk_weight)
-                create_blocks(blk_weight, self.round)
-                generate_blocks(window_surface, blk_weight)
-                self.org_board = deepcopy(blk_weight)
-                self.round += 1
+                if check_end(blk_weight) == False:
+                    round_update(blk_weight)
+                    create_blocks(blk_weight, self.round)
+                    generate_blocks(window_surface, blk_weight)
+                    self.org_board = deepcopy(blk_weight)
+                    self.round += 1
+                else:
+                    game_over()
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(self, pos, upgrade_type, upgrade_group, group) -> None:
@@ -321,6 +324,28 @@ def create_blocks(blk_weight, round):
         print(i)
     return blk_weight
 
+def check_end(blk_weight):
+    for a in range(len(blk_weight)):
+        if blk_weight[a][9] > 0:
+            return True
+    
+    return False
+
+def game_over():
+    window_surface.fill((0, 0, 0))
+    font = pygame.font.SysFont('Garamond', 50)
+    message = font.render("Game Over !", False, (255, 0, 0))
+    round_end = font.render('Round: ' + str(ball.round), False, (255, 0, 0))
+    window_surface.blit(message, (60, WINDOW_HEIGHT // 2))
+    window_surface.blit(round_end, (60, WINDOW_HEIGHT // 2 + 40))
+    pygame.display.update()
+    time.sleep(10)
+    pygame.display.quit()
+    pygame.quit()
+
+
+
+
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 600
 WHITE = (255, 255, 255)
@@ -471,4 +496,8 @@ while True:
                 block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
                 window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
     
+    if (check_end == True):
+        break
+
     pygame.display.update()
+
