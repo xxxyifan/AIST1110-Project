@@ -9,44 +9,10 @@ import time
 
 pygame.init()
 
-# class Point:
-#     # constructed using a normal tupple
-#     def __init__(self, point_t = (0,0)):
-#         self.x = float(point_t[0])
-#         self.y = float(point_t[1])
-#     # define all useful operators
-#     def __add__(self, other):
-#         return Point((self.x + other.x, self.y + other.y))
-#     def __sub__(self, other):
-#         return Point((self.x - other.x, self.y - other.y))
-#     def __mul__(self, scalar):
-#         return Point((self.x*scalar, self.y*scalar))
-#     def __div__(self, scalar):
-#         return Point((self.x/scalar, self.y/scalar))
-#     def __len__(self):
-#         return int(math.sqrt(self.x**2 + self.y**2))
-#     # get back values in original tuple format
-#     def get(self):
-#         return (self.x, self.y)
-
-# def draw_dashed_line(surf, color, start_pos, end_pos, width=1, dash_length=10):
-#     origin = Point(start_pos)
-#     target = Point(end_pos)
-#     displacement = target - origin
-#     length = len(displacement)
-#     slope = displacement/length
-
-#     for index in range(0, length/dash_length, 2):
-#         start = origin + (slope *    index    * dash_length)
-#         end   = origin + (slope * (index + 1) * dash_length)
-#         pygame.draw.line(surf, color, start.get(), end.get(), width)
-
 
 class Balls(pygame.sprite.Sprite):
     def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group) -> None:
         super().__init__(group, ball_group)
-        # self.image = pygame.Surface([radius*2,radius*2])
-        # self.image.fill((0,0,0))
         self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
         self.rect = self.image.get_rect()
@@ -54,7 +20,7 @@ class Balls(pygame.sprite.Sprite):
         self.is_move = False
         self.x_speed = 0
         self.y_speed = 0
-        self.speed = 13
+        self.speed = 15
         self.radius = radius
         self.block = block_group
         self.ball = ball_group
@@ -65,8 +31,8 @@ class Balls(pygame.sprite.Sprite):
         self.damage = 1
 
     def collison(self):
-        #collison with other rect
 
+        #collison with other rect
         overlap_sprites = pygame.sprite.spritecollide(self, self.block, False)
         if overlap_sprites:
             for sprite in overlap_sprites:
@@ -100,10 +66,10 @@ class Balls(pygame.sprite.Sprite):
         if opverlap_upgrade:
             for upgrades in opverlap_upgrade:
                 if upgrades.upgrade_type == "ball_split":
-                    tmp_ball = Tmp_Balls(self.radius, self.rect.midright[0]-self.radius-1, self.rect.midright[1], self.round, self.group, self.ball, self.block, self.upgrade)
+                    tmp_ball = Tmp_Balls(self.radius, self.rect.midright[0]-self.radius-1, self.rect.midright[1], self.round, self.group, self.ball, self.block, self.upgrade, self.damage)
                     tmp_ball.x_speed = self.x_speed * -1
-                    tmp_ball.y_speed = self.y_speed
-                    tmp_ball.speed = random.randint(12,17)
+                    tmp_ball.y_speed = self.y_speed * random.uniform(0.5, 1.3)
+                    tmp_ball.speed = random.randint(15,20)
                     tmp_ball.is_move = True
                 else: 
                     self.damage += 1
@@ -137,16 +103,16 @@ class Balls(pygame.sprite.Sprite):
             all_out = True
             if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.is_move = False
-                break
 
             for sprite in self.ball:
                 if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
                     all_out = False
+                    break
             if all_out == True:
                 if check_end(blk_weight) == False:
                     self.change_round()
                 else:
-                    game.over()
+                    game_over()
 
     def change_round(self):
         self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
@@ -166,11 +132,11 @@ class Upgrade(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
 
 class Tmp_Balls(Balls):
-    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group):
+    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group, damage):
         super().__init__(radius, pos_x, pos_y, round ,group, ball_group, block_group, upgrade_group)
-        # self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
-        # self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
-        self.image.fill((80,80,80))
+        self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
+        self.damage = damage
     def update(self):
         if self.is_move == True:
             pos_x = self.rect.center[0]
@@ -200,9 +166,9 @@ class Tmp_Balls(Balls):
                     
             if all_out == True:
                 if check_end(blk_weight) == False:
-                        ball.change_round()
-                    else:
-                        game.over()
+                    ball.change_round()
+                else:
+                    game_over()
 
         
 
@@ -215,8 +181,6 @@ class Barriers(pygame.sprite.Sprite):
         self.width = 500 / 10  # Set maximum width of block = 1/10 of the window width
         self.height = self.width
         self.score = score
-        # self.image = pygame.Surface((self.width,self.height))
-        # self.image.fill((Barriers.color_pick(self)))
         self.color_pick()
         self.rect = self.image.get_rect(topleft = (self.x, self.y))
         self.block_group = block_group
@@ -391,15 +355,6 @@ window_surface.fill(WHITE)
 
 
 
-    # Test ONLY 
-    # round_update(blk_weight)
-    # create_blocks(blk_weight, round)
-    # generate_blocks(window_surface, blk_weight)
-    # time.sleep(1)
-    # round += 1
-
-# pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
-# pointer.blit()
 all_sprites_gruop = pygame.sprite.Group()
 ball_group = pygame.sprite.Group()
 block_group = pygame.sprite.Group()
@@ -410,18 +365,6 @@ tmp_ball_group = pygame.sprite.Group()
 #ball
 ball = Balls(radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, round_, all_sprites_gruop, ball_group, block_group, upgrade_group)
 
-
-#block
-# block_1 = Block((50, 260), [all_sprites_gruop, block_group])
-# block_2 = Block((50, 100), [all_sprites_gruop, block_group])
-# block_3 = Block((100, 260), [all_sprites_gruop, block_group])
-# block_4 = Block((400, 400), [all_sprites_gruop, block_group])
-
-#upgrade
-# upgrade_type = random.choice(["add_damage", "ball_split"])
-# upgrade_1 = Upgrade((200,150), "ball_split", upgrade_group, all_sprites_gruop)
-# upgrade_2 = Upgrade((400,50), "ball_split", upgrade_group, all_sprites_gruop)
-# upgrade_3 = Upgrade((100,500), "ball_split", upgrade_group, all_sprites_gruop)
 
 # variable for change degree
 is_degree_change = False
@@ -451,14 +394,6 @@ while True:
     # Detect Game Event
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
-            ''''
-            if event.key == ord("a"):
-                pointer.image = pointer.rot_center(1)
-                pointer.blit()
-            if event.key == ord("d"):
-                pointer.image = pointer.rot_center(-1)
-                pointer.blit()
-            '''
 
             # Generate Blocks (TEST): Press Space Bar to move barriers downward
             if event.key == pygame.K_SPACE:
@@ -493,8 +428,6 @@ while True:
             pygame.quit()
             sys.exit()
 
-    # window_surface.fill(WHITE)
-
     # Print Background
     bg = pygame.image.load("files/image/Full-Background.png").convert()
     bg = pygame.transform.scale(bg, (WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -513,14 +446,16 @@ while True:
     all_sprites_gruop.update()
     all_sprites_gruop.draw(window_surface)
 
-    pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-radius), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-radius)-100*sin(rad)), 3)
+    if all_end == True:
+        pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-radius), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-radius)-100*sin(rad)), 3)
 
     # Print Block Number
     for i in range(len(blk_weight)):
         for j in range(len(blk_weight[i])):
-            if blk_weight[j][i] > 0:
-                block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
-                window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
+            if isinstance(blk_weight[j][i], int):
+                if blk_weight[j][i] > 0:
+                    block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
+                    window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
     
     if (check_end == True):
         break
