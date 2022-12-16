@@ -135,20 +135,28 @@ class Balls(pygame.sprite.Sprite):
 
             #end the move when move to the bootom of the screen
             all_out = True
-            for sprite in ball_group:
-                print(sprite)
-                if sprite.rect.center[1] < WINDOW_HEIGHT+20:
-                    all_out = False
-            print(all_out)
-            if all_out == True:
+            if self.rect.center[1] >= WINDOW_HEIGHT+30:
+                print("aaaaaaa")
                 self.is_move = False
-                self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-26)
-                self.kill_all_block_and_upgrade()
-                round_update(blk_weight)
-                create_blocks(blk_weight, self.round)
-                generate_blocks(window_surface, blk_weight)
-                self.org_board = deepcopy(blk_weight)
-                self.round += 1
+
+            for sprite in self.ball:
+                print("1",sprite)
+                if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
+                    all_out = False
+
+            print(all_out)
+
+            if all_out == True:
+                self.change_round()
+
+    def change_round(self):
+        self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
+        self.kill_all_block_and_upgrade()
+        round_update(blk_weight)
+        create_blocks(blk_weight, self.round)
+        generate_blocks(window_surface, blk_weight)
+        self.org_board = deepcopy(blk_weight)
+        self.round += 1
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(self, pos, upgrade_type, upgrade_group, group) -> None:
@@ -160,8 +168,9 @@ class Upgrade(pygame.sprite.Sprite):
 class Tmp_Balls(Balls):
     def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group):
         super().__init__(radius, pos_x, pos_y, round ,group, ball_group, block_group, upgrade_group)
-        self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
+        # self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
+        # self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
+        self.image.fill((80,80,80))
     def update(self):
         if self.is_move == True:
             pos_x = self.rect.center[0]
@@ -179,8 +188,16 @@ class Tmp_Balls(Balls):
             if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                 self.y_speed *= -1
             #end the move when move to the bootom of the screen
-            if self.rect.center[1] >= WINDOW_HEIGHT+100:
+            all_out = True
+            if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.kill()
+            for sprite in self.ball:
+                print("2",sprite)
+                if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
+                    all_out = False
+            if all_out == True:
+                ball.change_round()
+
         
 
 
@@ -310,9 +327,9 @@ def create_blocks(blk_weight, round):
         while blk_weight[upgrade_ypos][0] != 0:
             upgrade_ypos = random.randint(0, len(blk_weight)-1)
         blk_weight[upgrade_ypos][0] = "X"
-    print("before collison")   
-    for i in blk_weight:
-        print(i)
+    # print("before collison")   
+    # for i in blk_weight:
+    #     print(i)
     return blk_weight
 
 WINDOW_WIDTH = 500
@@ -324,6 +341,7 @@ degree = 90
 radius = 20
 clock = pygame.time.Clock()
 round_ = 0
+damage = 1
 
 # Define an array which store the block location and block weighting
 blk_weight = [
@@ -355,7 +373,7 @@ window_surface.fill(WHITE)
 # pointer = Pointer(WINDOW_WIDTH, WINDOW_HEIGHT, fi_pointer)
 # pointer.blit()
 all_sprites_gruop = pygame.sprite.Group()
-ball_group = pygame.sprite.GroupSingle()
+ball_group = pygame.sprite.Group()
 block_group = pygame.sprite.Group()
 barriers_group = pygame.sprite.Group()
 upgrade_group = pygame.sprite.Group()
@@ -458,7 +476,7 @@ while True:
 
     all_sprites_gruop.update()
     all_sprites_gruop.draw(window_surface)
-    if ball.is_move == False:
-        pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
+
+    pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
     # draw_dashed_line(window_surface, WHITE, (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), width=3, dash_length=10)
     pygame.display.update()
