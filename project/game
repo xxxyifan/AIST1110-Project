@@ -74,9 +74,9 @@ class Balls(pygame.sprite.Sprite):
                     blk_weight[sprite.x//50][sprite.y//50] -= self.damage
                     if blk_weight[sprite.x//50][sprite.y//50] < 1:
                         sprite.kill()
-            # print("after collison")  
-            # for i in blk_weight:
-            #     print(i)
+            print("after collison")  
+            for i in blk_weight:
+                print(i)
         else:
             self.org_board = deepcopy(blk_weight)
 
@@ -136,16 +136,10 @@ class Balls(pygame.sprite.Sprite):
             #end the move when move to the bootom of the screen
             all_out = True
             if self.rect.center[1] >= WINDOW_HEIGHT+30:
-                print("aaaaaaa")
                 self.is_move = False
-
             for sprite in self.ball:
-                print("1",sprite)
                 if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
                     all_out = False
-
-            print(all_out)
-
             if all_out == True:
                 self.change_round()
 
@@ -192,7 +186,6 @@ class Tmp_Balls(Balls):
             if self.rect.center[1] >= WINDOW_HEIGHT+30:
                 self.kill()
             for sprite in self.ball:
-                print("2",sprite)
                 if sprite.rect.center[1] <= WINDOW_HEIGHT+30:
                     all_out = False
             if all_out == True:
@@ -222,27 +215,27 @@ class Barriers(pygame.sprite.Sprite):
             # color = (255, 0, 0)
             self.image = pygame.image.load("files/image/red.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 20): # 11-20: Orange
+        elif (10 <= self.score < 20): # 11-20: Orange
             # color = (255, 128, 0)
             self.image = pygame.image.load("files/image/red2.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 30): # 21-30: Yellow
+        elif (20 <= self.score < 30): # 21-30: Yellow
             # color = (255, 255, 0)
             self.image = pygame.image.load("files/image/orange.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 40): # 31-40: Green
+        elif (30 <= self.score < 40): # 31-40: Green
             # color = (0, 255, 0)
             self.image = pygame.image.load("files/image/green.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 50): # 41-50: Cyan
+        elif (40 <= self.score < 50): # 41-50: Cyan
             # color = (0, 255, 255)
             self.image = pygame.image.load("files/image/lightblue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 60): #51-60: Blue
+        elif (50 <= self.score < 60): #51-60: Blue
             # color = (0, 0, 255)
             self.image = pygame.image.load("files/image/blue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 70): #61-70: Purple
+        elif (60 <= self.score < 70): #61-70: Purple
             # color = (255, 0, 255)
             self.image = pygame.image.load("files/image/purple.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
@@ -307,7 +300,7 @@ def create_blocks(blk_weight, round):
     max_weight = (round // 10) + 1
 
     copy_last = random.randint(0, 1) # 0: Not Copy Last Row, 1: Copy Pattern of Last Row
-    has_upgrade = random.randint(0, 1)
+    has_upgrade = random.randint(0, 2)
 
     if (copy_last == 1 and round > 20):
         for i in range(len(blk_weight)):
@@ -327,9 +320,9 @@ def create_blocks(blk_weight, round):
         while blk_weight[upgrade_ypos][0] != 0:
             upgrade_ypos = random.randint(0, len(blk_weight)-1)
         blk_weight[upgrade_ypos][0] = "X"
-    # print("before collison")   
-    # for i in blk_weight:
-    #     print(i)
+    print("before collison")   
+    for i in blk_weight:
+        print(i)
     return blk_weight
 
 WINDOW_WIDTH = 500
@@ -412,6 +405,14 @@ while True:
         if degree < 10:
             degree = 10
 
+    #to check if all the ball die
+    all_end = True
+    for sprite in ball_group:
+        if sprite.is_move == True:
+            all_end = False
+            break
+
+    
     # Detect Game Event
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
@@ -429,21 +430,21 @@ while True:
                 round_update(blk_weight)
                 create_blocks(blk_weight, round_)
                 generate_blocks(window_surface, blk_weight)
-                round_ += 1
+                ball.round += 1
 
             #change the angle 
             if event.key == ord("a"):
-                if ball.is_move == False:
+                if all_end == True:
                     is_degree_change = True
                     change_value = 2
             if event.key == ord("d"):
-                if ball.is_move == False:
+                if all_end == True:
                     is_degree_change = True
                     change_value = -2
 
             #shoot
             if event.key == ord("w"):
-                if ball.is_move == False:
+                if all_end == True:
                     ball.x_speed = cos(rad)
                     ball.y_speed = sin(rad)
                     ball.is_move = True
@@ -477,6 +478,6 @@ while True:
     all_sprites_gruop.update()
     all_sprites_gruop.draw(window_surface)
 
-    pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), 3)
+    pygame.draw.line(window_surface, (255, 255, 255), (WINDOW_WIDTH/2, WINDOW_HEIGHT-radius), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-radius)-100*sin(rad)), 3)
     # draw_dashed_line(window_surface, WHITE, (WINDOW_WIDTH/2, WINDOW_HEIGHT-25), (WINDOW_WIDTH/2 + 100*cos(rad), (WINDOW_HEIGHT-25)-100*sin(rad)), width=3, dash_length=10)
     pygame.display.update()
