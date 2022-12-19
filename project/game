@@ -42,9 +42,9 @@ class Balls(pygame.sprite.Sprite):
                     blk_weight[sprite.x//50][sprite.y//50] -= self.damage
                     if blk_weight[sprite.x//50][sprite.y//50] < 1:
                         sprite.kill()
-            print("after collison")  
-            for i in blk_weight:
-                print(i)
+            # print("after collison")  
+            # for i in blk_weight:
+            #     print(i)
             # collision sound
             pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_1.ogg"))
         else:
@@ -64,8 +64,7 @@ class Balls(pygame.sprite.Sprite):
                     self.x_speed *= -1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
-        
-            
+          
 
         #collison with upgrade
         opverlap_upgrade = pygame.sprite.spritecollide(self, self.upgrade, True)
@@ -112,13 +111,14 @@ class Balls(pygame.sprite.Sprite):
 
             #end the move when move to the bootom of the screen
             all_out = True
-            if self.rect.center[1] >= WINDOW_HEIGHT+50:
+            if self.rect.center[1] > WINDOW_HEIGHT+40:
                 self.is_move = False
 
             for sprite in self.ball:
-                if sprite.rect.center[1] <= WINDOW_HEIGHT+50:
+                if sprite.rect.center[1] <= WINDOW_HEIGHT+40:
                     all_out = False
                     break
+                    
             if all_out == True:
                 if check_end(blk_weight) == False:
                     self.change_round()
@@ -169,11 +169,11 @@ class Tmp_Balls(Balls):
                 
             #end the move when move to the bootom of the screen
             all_out = True
-            if self.rect.center[1] >= WINDOW_HEIGHT+50:
+            if self.rect.center[1] > WINDOW_HEIGHT+40:
                 self.kill()
                 
             for sprite in self.ball:
-                if sprite.rect.center[1] <= WINDOW_HEIGHT+50:
+                if sprite.rect.center[1] <= WINDOW_HEIGHT+40:
                     all_out = False
                     break
                     
@@ -308,9 +308,9 @@ def create_blocks(blk_weight, round):
         while blk_weight[upgrade_ypos][0] != 0:
             upgrade_ypos = random.randint(0, len(blk_weight)-1)
         blk_weight[upgrade_ypos][0] = "X"
-    print("before collison")   
-    for i in blk_weight:
-        print(i)
+    # print("before collison")   
+    # for i in blk_weight:
+    #     print(i)
     return blk_weight
 
 def check_end(blk_weight):
@@ -320,22 +320,14 @@ def check_end(blk_weight):
     
     return False
 
-# def game_over():
-#     window_surface.fill((0, 0, 0))
-#     font = pygame.font.SysFont('Garamond', 50)
-#     message = font.render("Game Over !", False, (255, 0, 0))
-#     round_end = font.render('Round: ' + str(ball.round), False, (255, 0, 0))
-#     window_surface.blit(message, (60, WINDOW_HEIGHT // 2))
-#     window_surface.blit(round_end, (60, WINDOW_HEIGHT // 2 + 40))
-#     pygame.display.update()
-#     time.sleep(10)
-#     pygame.display.quit()
-#     pygame.quit()
-
 def bgm():
     pygame.mixer.init()
     # pygame.mixer.set_num_channels(2)
     pygame.mixer.Channel(0).play(pygame.mixer.Sound("files/bgm/12 final battle.ogg"))
+
+# calulate distance between two point
+def distance(p1, p2):
+    return ((abs(p1[0]-p2[0])**2 + abs(p1[1]-p2[1])**2)**1/2)
 
 
 
@@ -408,10 +400,10 @@ while True:
     #move the pointer
     if is_degree_change == True:
         degree += change_value
-        if degree > 170:
-            degree = 170
-        if degree < 10:
-            degree = 10
+        if degree > 150:
+            degree = 150
+        if degree < 30:
+            degree = 30
 
     #to check if all the ball die
     all_end = True
