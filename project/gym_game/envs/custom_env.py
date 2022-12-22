@@ -25,3 +25,6 @@ class CustomEnv(gym.Env):
 
     def render(self, mode="human", close=False):
         self.pygame.view()
+        
+    def close(self):
+        pass
