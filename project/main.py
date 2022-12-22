@@ -58,6 +58,7 @@ if __name__ == "__main__":
     epsilon_decay = 0.999
     learning_rate = 0.1
     gamma = 0.6
-    num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
-    q_table = np.zeros(num_box + (env.action_space.n,))
+    # num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
+    # q_table = np.zeros(num_box + (env.action_space.n,))
+    q_table = np.zeros((100, 120))
     simulate()

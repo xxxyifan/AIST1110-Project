@@ -7,7 +7,7 @@ class CustomEnv(gym.Env):
     #metadata = {'render.modes' : ['human']}
     def __init__(self):
         self.pygame = Gym_Game()
-        self.action_space = spaces.Discrete(120, start=30)
+        self.action_space = spaces.Discrete(120)
         self.observation_space = spaces.Box(np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), \
                                             np.array([200, 200, 200, 200, 200, 200, 200, 200, 200, 200]), dtype=np.int)
 

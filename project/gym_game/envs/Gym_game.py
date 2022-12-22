@@ -377,72 +377,78 @@ class Gym_Game():
         #ball
         self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.game_status)
 
-        def action(self, action):
-            self.clock.tick(FPS)
-            rad = action/180 * math.pi
-            self.ball.x_speed = cos(rad)
-            self.ball.y_speed = sin(rad)
+    def action(self, action):
+        self.clock.tick(FPS)
+        rad = (action)/180 * math.pi
+        self.ball.x_speed = cos(rad)
+        self.ball.y_speed = sin(rad)
 
-            #to check if all the ball die
-            all_end = True
-            def check_round_end(all_end):
-                for sprite in self.ball_group:
-                    if sprite.is_move == True:
-                        all_end = False
-                        break
-                return all_end
+        #to check if all the ball die
+        all_end = True
+        def check_round_end(all_end):
+            for sprite in self.ball_group:
+                if sprite.is_move == True:
+                    all_end = False
+                    break
+            return all_end
 
-            while all_end:
-                self.all_sprites_gruop.update()
-                all_end = check_round_end(all_end)
-            
-            self.ball.change_round()
-            
-        def observe(self):
-            obs = [0,0,0,0,0,0,0,0,0,0]
-            for rows in self.ball.board:
-                for cols in range(len(rows)):
-                    obs[cols] += self.ball.board[rows][cols] * rows
-            
-            return obs
+        while all_end:
+            self.all_sprites_group.update()
+            all_end = check_round_end(all_end)
         
-        def evaluate(self):
-            rewards = self.ball.round_score
-            self.ball.round.score = 0
+        self.ball.change_round()
+        
+    def observe(self):
+        # obs = [0,0,0,0,0,0,0,0,0,0]
+        # for rows in self.ball.board:
+        #     for cols in range(len(rows)):
+        #         obs[cols] += self.ball.board[rows][cols] * rows
+        
+        # return obs
+        obs = []
+        for rows in range(len(self.ball.board)):
+            for cols in range(len(self.ball.board[rows])):
+                obs.append(self.ball.board[rows][cols])
+        
+        return obs
+    
+    def evaluate(self):
+        rewards = self.ball.round_score
+        self.ball.round.score = 0
 
-            return rewards
+        return rewards
 
-        def is_done(self):
-            is_end = check_end(self.ball.board)
-            if is_end:
-                self.ball.game_status = 2
-                return True
-            return False
+    def is_done(self):
+        is_end = check_end(self.ball.board)
+        if is_end:
+            self.ball.game_status = 2
+            return True
+        return False
 
-        def view(self):
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+    def view(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-            pygame.font.init()
-            font = pygame.font.SysFont('Comic Sans MS', 20)
-            text_gen = font.render('Round: ' + str(self.ball.round), False, (255, 255, 255))
-            self.window_surface.blit(text_gen, (10, WINDOW_HEIGHT - 55))
-            # Print ball damage
-            text_dam = font.render("Damage:" + str(self.ball.damage), False, (255, 255, 255)) 
-            self.window_surface.blit(text_dam, (10, WINDOW_HEIGHT - 30))
+        pygame.font.init()
+        font = pygame.font.SysFont('Comic Sans MS', 20)
+        text_gen = font.render('Round: ' + str(self.ball.round), False, (255, 255, 255))
+        self.window_surface.blit(text_gen, (10, WINDOW_HEIGHT - 55))
+        # Print ball damage
+        text_dam = font.render("Damage:" + str(self.ball.damage), False, (255, 255, 255)) 
+        self.window_surface.blit(text_dam, (10, WINDOW_HEIGHT - 30))
 
-            self.all_sprites_gruop.draw(self.window_surface)
+        self.all_sprites_gruop.draw(self.window_surface)
 
-            # Print Block Number
-            for i in range(len(blk_weight)):
-                for j in range(len(blk_weight[i])):
-                    if isinstance(blk_weight[j][i], int):
-                        if blk_weight[j][i] > 0:
-                            block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
-                            self.window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
-            pygame.display.update()
+        # Print Block Number
+        for i in range(len(blk_weight)):
+            for j in range(len(blk_weight[i])):
+                if isinstance(blk_weight[j][i], int):
+                    if blk_weight[j][i] > 0:
+                        block_score = font.render(str(blk_weight[j][i]), False, (255, 255, 255))
+                        self.window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
+        pygame.display.update()
 
         
 
