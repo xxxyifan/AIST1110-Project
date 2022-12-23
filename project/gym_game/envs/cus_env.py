@@ -15,7 +15,6 @@ class CustomEnv(gym.Env):
         del self.pygame
         self.pygame = Gym_Game()
         obs = self.pygame.observe()
-        print("initial obs = ", obs)
         return obs
 
     def step(self, action):
