@@ -7,6 +7,7 @@ from math import sin, cos
 from copy import copy, deepcopy
 import time
 from threading import Timer
+import numpy as np
 
 pygame.init()
 
@@ -67,9 +68,9 @@ class Balls(pygame.sprite.Sprite):
                     self.board[sprite.x//50][sprite.y//50] -= self.damage
                     if self.board[sprite.x//50][sprite.y//50] < 1:
                         sprite.kill()
-            print("after collison")  
-            for i in self.board:
-                print(i)
+            # print("after collison")  
+            # for i in self.board:
+            #     print(i)
             # collision sound
  #           pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_1.ogg"))
         else:
@@ -316,17 +317,33 @@ class Gym_Game():
         self.ball.change_round()
             
     def observe(self):
-        obs = [0,0,0,0,0,0,0,0,0,0]
-        for rows in range(len(self.ball.board)):
-            for cols in range(len(self.ball.board)):
-                if self.ball.board[rows][cols] != "X":
-                    obs[cols] += int(self.ball.board[rows][cols])
-        
-        return tuple(obs)
+        obs = [0,0]
+        value_rows = [0,0,0,0,0,0,0,0,0,0]
+        value_cols = [0,0,0,0,0,0,0,0,0,0]
+        for i in range(10):
+            for j in range(10):
+                if self.ball.board[i][j] != "X":
+                    value_cols[i] += self.ball.board[i][j]
+                else:
+                    value_cols[i] += 100
+                if self.ball.board[j][i] != "X":
+                    value_rows[i] += self.ball.board[j][i] * 2**(i)
+                else:
+                    value_rows[i] += 100 * 2**(i)
+            # print(self.ball.board[i])
+        # print(value_rows)
+        # print(value_cols)
+        obs[0] = value_rows.index(max(value_rows))
+        obs[1] = value_cols.index(max(value_cols))
+        return (np.array(obs), {})
     
     def evaluate(self):
         rewards = self.ball.round_score
         self.ball.round_score = 0
+        if rewards == 0:
+            rewards = -100
+        elif rewards <= 1:
+            rewards = -50
 
         return rewards
 

@@ -12,28 +12,30 @@ def simulate():
 
         # Init environment
         state = env.reset()
+        state = tuple(state[0])
         total_reward = 0
 
         # AI tries up to MAX_TRY times
         for t in range(MAX_TRY):
-            print("start")
+
             # In the beginning, do random action to learn
             if random.uniform(0, 1) < epsilon:
                 action = env.action_space.sample()
             else:
                 action = np.argmax(q_table[state])
 
+            if action >= 120:
+                action = 119
             # Do action and get result
             next_state, reward, done, _ , a = env.step(action)
-            print("action finish")
             total_reward += reward
 
             # Get correspond q value from state, action pair
-            q_value = q_table[state][action]
-            best_q = np.max(q_table[next_state])
+            q_value = q_table[tuple(state)][action]
+            best_q = np.max(q_table[tuple(next_state)])
 
             # Q(state, action) <- (1 - a)Q(state, action) + a(reward + rmaxQ(next state, all actions))
-            q_table[state][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
+            q_table[tuple(state)][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
 
             # Set up for the next iteration
             state = next_state
@@ -60,5 +62,7 @@ if __name__ == "__main__":
     learning_rate = 0.1
     gamma = 0.6
     num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
+    print(num_box)
+    print(num_box + (env.action_space.n,))
     q_table = np.zeros(num_box + (env.action_space.n,))
     simulate()
