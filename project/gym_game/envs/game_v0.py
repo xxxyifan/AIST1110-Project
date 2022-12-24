@@ -56,6 +56,7 @@ class Balls(pygame.sprite.Sprite):
         self.org_board = deepcopy(self.board)
         self.damage = 1
         self.game_status = game_status
+        self.hit = 0
 
     def collison(self):
 
@@ -84,12 +85,16 @@ class Balls(pygame.sprite.Sprite):
             for sprite in overlap_sprites:
                 if abs(sprite.rect.top - self.rect.bottom) < collision_tolerace and self.y_speed < 0:
                     self.y_speed *= -1
+                    self.hit += 1
                 if abs(sprite.rect.bottom - self.rect.top) < collision_tolerace and self.y_speed > 0:
                     self.y_speed *= -1
+                    self.hit += 1
                 if abs(sprite.rect.left - self.rect.right) < collision_tolerace and self.x_speed > 0:
                     self.x_speed *= -1
+                    self.hit += 1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
+                    self.hit += 1
           
 
         #collison with upgrade
@@ -136,13 +141,14 @@ class Balls(pygame.sprite.Sprite):
                 self.is_move = False
 
     def change_round(self):
-        self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
         self.kill_all_block_and_upgrade()
         round_update(self.board)
         create_blocks(self.board, self.round)
         generate_blocks(self.board, self.block, self.upgrade, self.group)
         self.org_board = deepcopy(self.board)
+        self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
         self.round += 1
+        self.hit = 0
 
 class Upgrade(pygame.sprite.Sprite):
     def __init__(self, pos, upgrade_type, upgrade_group, group) -> None:
@@ -281,6 +287,8 @@ class Gym_Game():
             for sprite in self.ball_group:
                 if sprite.is_move == True:
                     return False
+                if sprite.hit >= 100:
+                    return True
             return True
 
         all_end = False
