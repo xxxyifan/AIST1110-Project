@@ -2,11 +2,14 @@ import sys
 import numpy as np
 import math
 import random
+import pygame
 
 import gym
 import gym_game
 
-def simulate():
+from cmdargs import args
+
+def simulate(GAME_MODE):
     global epsilon, epsilon_decay
     for episode in range(MAX_EPISODES):
 
@@ -15,6 +18,36 @@ def simulate():
         state = tuple(state[0])
         total_reward = 0
 
+        # if GAME_MODE == "human":
+        #     # change_value = 0
+        #     # action = -1
+        #     # while action < 0:
+        #     #     env.render()
+        #     #     #move the pointer
+        #     #     degree = 90
+        #     #     degree += change_value
+        #     #     if degree > 150:
+        #     #         degree = 150
+        #     #     if degree < 30:
+        #     #         degree = 30
+        #     #     for event in pygame.event.get():
+        #     #         if event.type == pygame.KEYDOWN:
+        #     #             #change the angle 
+        #     #             if event.key == ord("a"):
+        #     #                 is_degree_change = True
+        #     #                 change_value = 2
+        #     #             if event.key == ord("d"):
+        #     #                 is_degree_change = True
+        #     #                 change_value = -2
+        #     #             #shoot
+        #     #             if event.key == ord("w"):
+        #     #                 action = degree - 30
+        #     #                 break
+
+        #         # if event.type == QUIT:
+        #         #     pass
+        #     pass
+        # else:
         # AI tries up to MAX_TRY times
         for t in range(MAX_TRY):
 
@@ -41,7 +74,9 @@ def simulate():
             state = next_state
 
             # Draw games
-            env.render()
+            if GAME_MODE == "ai":
+                # print("Non-CLI")
+                env.render()
 
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
@@ -51,12 +86,18 @@ def simulate():
         # exploring rate decay
         if epsilon >= 0.005:
             epsilon *= epsilon_decay
+    
+    # Save Q-Table to Text File
+    with open("q_table.txt", 'w+') as q:
+        np.savetxt('q_table.txt', q_table)
+    env.close()
 
 
 if __name__ == "__main__":
     env = gym.make("pygame-v0")
-    MAX_EPISODES = 9999
+    MAX_EPISODES = args.episodes
     MAX_TRY = 1000
+    GAME_MODE = args.mode
     epsilon = 1
     epsilon_decay = 0.999
     learning_rate = 0.1
@@ -65,4 +106,11 @@ if __name__ == "__main__":
     print(num_box)
     print(num_box + (env.action_space.n,))
     q_table = np.zeros(num_box + (env.action_space.n,))
-    simulate()
+    # Import Q_table
+    if args.file is not None:
+        pass
+    if GAME_MODE == "human":
+        exec(open("game.py").read())
+    else:
+        simulate(GAME_MODE)
+    # simulate(GAME_MODE)

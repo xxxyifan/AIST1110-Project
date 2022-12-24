@@ -90,6 +90,10 @@ class Balls(pygame.sprite.Sprite):
                     self.x_speed *= -1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
+                change = random.choice([0,1])
+                if change == 1:
+                    self.x_speed += random.choice([-1,0,1])
+                    self.y_speed += random.choice([-1,0,1])
           
 
         #collison with upgrade
@@ -223,36 +227,36 @@ class Barriers(pygame.sprite.Sprite):
     # Choose Different Texture at different score
     def color_pick(self):
         # color = (255, 255, 255)
-        if (self.score < 5): # 1-10: Red
+        if (self.score % 10 == 1 or self.score % 10 == 8): 
             # color = (255, 0, 0)
             self.image = pygame.image.load("files/image/red.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 10): # 11-20: Orange
+        elif (self.score % 10 == 2 or self.score % 10 == 9): 
             # color = (255, 128, 0)
             self.image = pygame.image.load("files/image/red2.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 15): # 21-30: Yellow
+        elif (self.score % 10 == 3): 
             # color = (255, 255, 0)
             self.image = pygame.image.load("files/image/orange.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 20): # 31-40: Green
+        elif (self.score % 10 == 4): 
             # color = (0, 255, 0)
             self.image = pygame.image.load("files/image/green.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 30): # 41-50: Cyan
+        elif (self.score % 10 == 5): 
             # color = (0, 255, 255)
             self.image = pygame.image.load("files/image/lightblue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 40): #51-60: Blue
+        elif (self.score % 10 == 6): 
             # color = (0, 0, 255)
             self.image = pygame.image.load("files/image/blue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 50): #61-70: Purple
+        elif (self.score % 10 == 7): 
             # color = (255, 0, 255)
             self.image = pygame.image.load("files/image/purple.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         else:
-            # color = (0, 0, 0) # Otherwise: Black
+            # color = (0, 0, 0) 
             self.image = pygame.image.load("files/image/gray.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         return
@@ -295,7 +299,6 @@ class Gym_Game():
         self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.game_status, self.blk_weight)
 
     def action(self, action):
-        self.clock.tick(FPS)
         rad = (action+30)/180 * math.pi
         self.ball.x_speed = cos(rad)
         self.ball.y_speed = sin(rad)
@@ -327,9 +330,9 @@ class Gym_Game():
                 else:
                     value_cols[i] += 100
                 if self.ball.board[j][i] != "X":
-                    value_rows[i] += self.ball.board[j][i] * 2**(i)
+                    value_rows[i] += self.ball.board[j][i] * 10**(i)
                 else:
-                    value_rows[i] += 100 * 2**(i)
+                    value_rows[i] += 100 * 10**(i)
             # print(self.ball.board[i])
         # print(value_rows)
         # print(value_cols)
@@ -341,10 +344,9 @@ class Gym_Game():
         rewards = self.ball.round_score
         self.ball.round_score = 0
         if rewards == 0:
-            rewards = -100
+            rewards = -10
         elif rewards <= 1:
-            rewards = -50
-
+            rewards = -5
         return rewards
 
     def is_done(self):
@@ -430,7 +432,7 @@ def create_blocks(blk_weight, round):
     max_weight = (round // 5) + 1
 
     copy_last = random.randint(0, 1) # 0: Not Copy Last Row, 1: Copy Pattern of Last Row
-    has_upgrade = random.randint(0, 2)
+    has_upgrade = random.randint(0, 1)
 
     if (copy_last == 1 and round > 20):
         for i in range(len(blk_weight)):
