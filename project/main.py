@@ -81,6 +81,9 @@ def simulate(GAME_MODE):
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
                 print("Episode %d finished after %i time steps with total reward = %f." % (episode, t, total_reward))
+                with open("result.txt", "a") as f:
+                    f.write(f"Episode {episode},step {t},reward {total_reward},epsilon {epsilon}")
+                    f.write("\n")
                 break
 
         # exploring rate decay
@@ -88,8 +91,9 @@ def simulate(GAME_MODE):
             epsilon *= epsilon_decay
     
     # Save Q-Table to Text File
-    with open("q_table.txt", 'w+') as q:
-        np.savetxt('q_table.txt', q_table)
+    with open("q_table.txt", 'w+') as f:
+        for i in q_table:
+            f.write(str(i))
     env.close()
 
 
@@ -101,10 +105,8 @@ if __name__ == "__main__":
     epsilon = 1
     epsilon_decay = 0.999
     learning_rate = 0.1
-    gamma = 0.6
+    gamma = 0.45
     num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
-    print(num_box)
-    print(num_box + (env.action_space.n,))
     q_table = np.zeros(num_box + (env.action_space.n,))
     # Import Q_table
     if args.file is not None:
