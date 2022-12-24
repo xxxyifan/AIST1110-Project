@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 import numpy as np
 from gym_game.envs.game_v0 import Gym_Game
+import pygame
 
 class CustomEnv(gym.Env):
     #metadata = {'render.modes' : ['human']}
@@ -29,5 +30,9 @@ class CustomEnv(gym.Env):
         # print("is_done finish, return to main")
         return obs[0], reward, done, False, {}
 
-    def render(self, mode="human", close=False):
+    def render(self, close=False):
         self.pygame.view()
+
+    def close(self):
+        pygame.display.quit()
+        pygame.quit()

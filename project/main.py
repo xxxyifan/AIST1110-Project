@@ -86,6 +86,10 @@ def simulate(GAME_MODE):
         # exploring rate decay
         if epsilon >= 0.005:
             epsilon *= epsilon_decay
+    
+    # Save Q-Table to Text File
+    with open("q_table.txt", 'w+') as q:
+        np.savetxt('q_table.txt', q_table)
     env.close()
 
 
@@ -102,6 +106,9 @@ if __name__ == "__main__":
     print(num_box)
     print(num_box + (env.action_space.n,))
     q_table = np.zeros(num_box + (env.action_space.n,))
+    # Import Q_table
+    if args.file is not None:
+        pass
     if GAME_MODE == "human":
         exec(open("game.py").read())
     else:
