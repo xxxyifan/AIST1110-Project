@@ -74,7 +74,9 @@ def simulate(GAME_MODE):
             state = next_state
 
             # Draw games
-            env.render()
+            if GAME_MODE == "ai":
+                # print("Non-CLI")
+                env.render()
 
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
@@ -84,6 +86,7 @@ def simulate(GAME_MODE):
         # exploring rate decay
         if epsilon >= 0.005:
             epsilon *= epsilon_decay
+    env.close()
 
 
 if __name__ == "__main__":
