@@ -90,10 +90,6 @@ class Balls(pygame.sprite.Sprite):
                     self.x_speed *= -1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
-                change = random.choice([0,1])
-                if change == 1:
-                    self.x_speed += random.choice([-1,0,1])
-                    self.y_speed += random.choice([-1,0,1])
           
 
         #collison with upgrade
@@ -111,10 +107,6 @@ class Balls(pygame.sprite.Sprite):
                 self.board[upgrades.rect.topleft[0]//50][upgrades.rect.topleft[1]//50] = 0
                 # collision sound
 #                pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_2.ogg"))
-
-            
-            
-
 
     def kill_all_block_and_upgrade(self):
         for sprite in self.block:
@@ -140,20 +132,8 @@ class Balls(pygame.sprite.Sprite):
             self.collison()
 
             #end the move when move to the bootom of the screen
-            # all_out = True
             if self.rect.center[1] > WINDOW_HEIGHT+40:
                 self.is_move = False
-
-            # for sprite in self.ball:
-            #     if sprite.rect.center[1] <= WINDOW_HEIGHT+40:
-            #         all_out = False
-            #         break
-                    
-            # if all_out == True:
-            #     if check_end(self.board) == False:
-            #         self.change_round()
-            #     else:
-            #         self.game_status = 2
 
     def change_round(self):
         self.rect.center = (WINDOW_WIDTH/2, WINDOW_HEIGHT-self.radius-1)
@@ -201,16 +181,6 @@ class Tmp_Balls(Balls):
             if self.rect.center[1] > WINDOW_HEIGHT+40:
                 self.kill()
                 
-            # for sprite in self.ball:
-            #     if sprite.rect.center[1] <= WINDOW_HEIGHT+40:
-            #         all_out = False
-            #         break
-                    
-            # if all_out == True:
-            #     if check_end(self.board) == False:
-            #         ball.change_round()
-            #     else:
-            #         ball.game_status = 2
 
 class Barriers(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, score, block_group, group):
@@ -299,6 +269,8 @@ class Gym_Game():
         self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.game_status, self.blk_weight)
 
     def action(self, action):
+        if action == 60:
+            action = 61
         rad = (action+30)/180 * math.pi
         self.ball.x_speed = cos(rad)
         self.ball.y_speed = sin(rad)
@@ -330,12 +302,10 @@ class Gym_Game():
                 else:
                     value_cols[i] += 100
                 if self.ball.board[j][i] != "X":
-                    value_rows[i] += self.ball.board[j][i] * 10**(i)
+                    value_rows[i] += self.ball.board[j][i] * i * i
                 else:
-                    value_rows[i] += 100 * 10**(i)
-            # print(self.ball.board[i])
-        # print(value_rows)
-        # print(value_cols)
+                    value_rows[i] += 100 * i * i
+
         obs[0] = value_rows.index(max(value_rows))
         obs[1] = value_cols.index(max(value_cols))
         return (np.array(obs), {})
@@ -344,9 +314,13 @@ class Gym_Game():
         rewards = self.ball.round_score
         self.ball.round_score = 0
         if rewards == 0:
-            rewards = -10
+            rewards = -1000
         elif rewards <= 1:
-            rewards = -5
+            rewards = -500
+        elif rewards <= 2:
+            rewards = -300
+        rewards += 10 * self.ball.round
+        
         return rewards
 
     def is_done(self):
