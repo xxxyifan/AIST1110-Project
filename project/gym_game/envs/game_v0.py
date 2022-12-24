@@ -227,36 +227,36 @@ class Barriers(pygame.sprite.Sprite):
     # Choose Different Texture at different score
     def color_pick(self):
         # color = (255, 255, 255)
-        if (self.score < 5): # 1-10: Red
+        if (self.score % 10 == 1 or self.score % 10 == 8): 
             # color = (255, 0, 0)
             self.image = pygame.image.load("files/image/red.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 10): # 11-20: Orange
+        elif (self.score % 10 == 2 or self.score % 10 == 9): 
             # color = (255, 128, 0)
             self.image = pygame.image.load("files/image/red2.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 15): # 21-30: Yellow
+        elif (self.score % 10 == 3): 
             # color = (255, 255, 0)
             self.image = pygame.image.load("files/image/orange.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 20): # 31-40: Green
+        elif (self.score % 10 == 4): 
             # color = (0, 255, 0)
             self.image = pygame.image.load("files/image/green.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 30): # 41-50: Cyan
+        elif (self.score % 10 == 5): 
             # color = (0, 255, 255)
             self.image = pygame.image.load("files/image/lightblue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 40): #51-60: Blue
+        elif (self.score % 10 == 6): 
             # color = (0, 0, 255)
             self.image = pygame.image.load("files/image/blue.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        elif (self.score < 50): #61-70: Purple
+        elif (self.score % 10 == 7): 
             # color = (255, 0, 255)
             self.image = pygame.image.load("files/image/purple.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         else:
-            # color = (0, 0, 0) # Otherwise: Black
+            # color = (0, 0, 0) 
             self.image = pygame.image.load("files/image/gray.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (self.width, self.height))
         return
