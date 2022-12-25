@@ -6,7 +6,6 @@ import pygame
 import time
 import gym
 import gym_game
-import matplotlib.pyplot as plt
 
 from cmdargs import args
 
@@ -26,7 +25,7 @@ def simulate(GAME_MODE):
             if random.uniform(0, 1) < epsilon:
                 action = env.action_space.sample()
             else:
-                action = np.argmax(q_table[state[0]*10+state[1]])
+                action = np.argmax(q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]])
 
             if action >= 120:
                 action = 119
@@ -35,18 +34,19 @@ def simulate(GAME_MODE):
             total_reward += reward
 
             # Get correspond q value from state, action pair
-            q_value = q_table[state[0]*10+state[1]][action]
-            best_q = np.max(q_table[next_state[0]*10+state[1]])
+            q_value = q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]][action]
+            best_q = np.max(q_table[next_state[0]*1000+next_state[1]*100+next_state[2]*10+next_state[3]])
 
             # Q(state, action) <- (1 - a)Q(state, action) + a(reward + rmaxQ(next state, all actions))
-            q_table[state[0]*10+state[1]][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
+            q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
 
             # Set up for the next iteration
             state = next_state
 
             # Draw games
-            if GAME_MODE == "ai":
-                env.render()
+            # if GAME_MODE == "ai":
+            #     print("Non-CLI")
+            #     env.render()
 
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
@@ -62,9 +62,6 @@ def simulate(GAME_MODE):
     
     # Save Q-Table to Text File
     np.savetxt("q_table.csv", q_table, delimiter=" ")
-
-    # When training is done, plot graph
-    plot_result()
 
     env.close()
 
@@ -132,33 +129,6 @@ def Ran_player(FPS):
         else:
             env.render()
 
-def plot_result():
-    episode = []
-    reward = []
-    epsilon = []
-    with open("result.txt", "r") as r:
-        for line in r:
-            tmp = line.split(",")
-            episode.append(float(tmp[0].strip("Episode \n")))
-            reward.append(float(tmp[2].strip("reward \n")))
-            epsilon.append(float(tmp[3].strip("epsilon \n")))
-    
-    plt.figure(1)
-
-    plt.subplot(121)
-    plt.plot(episode, reward)
-    plt.xlabel("Episode")
-    plt.ylabel("Training total reward")
-    plt.title("Total rewards over all episodes in training")
-
-    plt.subplot(122)
-    plt.plot(episode, epsilon)
-    plt.xlabel("Episode")
-    plt.ylabel("Epsilon")
-    plt.title("Epsilon for episode")
-    
-    plt.show()
-
 if __name__ == "__main__":
     env = gym.make("pygame-v0")
     MAX_EPISODES = args.episodes
@@ -170,7 +140,7 @@ if __name__ == "__main__":
     learning_rate = 0.1
     gamma = 0.45
     num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
-    q_table = np.zeros((num_box[0]*num_box[1], env.action_space.n))
+    q_table = np.zeros((num_box[0]*num_box[1]*num_box[2]*num_box[3], env.action_space.n))
     # Import Q_table
     if args.file is not None:
         q_table = np.loadtxt(open(args.file), delimiter=" ")

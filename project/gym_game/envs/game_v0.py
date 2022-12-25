@@ -8,7 +8,6 @@ from copy import copy, deepcopy
 import time
 from threading import Timer
 import numpy as np
-from cmdargs import args
 
 pygame.init()
 
@@ -288,8 +287,7 @@ class Gym_Game():
         all_end = False
         while all_end == False:
             self.all_sprites_group.update()
-            if args.mode != "ai-cli":
-                self.view()
+            self.view()
             all_end = check_round_end()
             if time.perf_counter() - start_time > 3:
                 all_end = True
@@ -297,7 +295,7 @@ class Gym_Game():
         self.ball.change_round()
             
     def observe(self):
-        obs = [0,0]
+        obs = [0,0,0,0]
         value_rows = [0,0,0,0,0,0,0,0,0,0]
         value_cols = [0,0,0,0,0,0,0,0,0,0]
         for i in range(10):
@@ -312,26 +310,24 @@ class Gym_Game():
                     value_rows[i] += 100 * i * i
 
         obs[0] = value_rows.index(max(value_rows))
-        obs[1] = value_cols.index(max(value_cols))
+        value_rows.pop(obs[0])
+        obs[1] = value_rows.index(max(value_rows))
+        
+        obs[2] = value_cols.index(max(value_cols))
+        value_cols.pop(obs[2])
+        obs[3] = value_cols.index(max(value_cols))
         return (np.array(obs), {})
     
     def evaluate(self):
-        # rewards = self.ball.round_score
-        # self.ball.round_score = 0
-        # if rewards == 0:
-        #     rewards = -1000
-        # elif rewards <= 1:
-        #     rewards = -500
-        # elif rewards <= 2:
-        #     rewards = -300
-        # rewards += 10 * self.ball.round
-        
-        rewards = 0
-
-        if self.ball.round_score > 5:
-            rewards = 1
-        elif self.ball.round_score == 0:
-            rewards = -1
+        rewards = self.ball.round_score
+        self.ball.round_score = 0
+        if rewards == 0:
+            rewards = -1000
+        elif rewards <= 1:
+            rewards = -500
+        elif rewards <= 2:
+            rewards = -300
+        rewards += 10 * self.ball.round
         
         return rewards
 
