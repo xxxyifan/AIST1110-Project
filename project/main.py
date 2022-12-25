@@ -57,7 +57,8 @@ def simulate(GAME_MODE):
                 break
 
             # When training is done, plot graph
-            
+            plot_result()
+
         # exploring rate decay
         if epsilon >= 0.005:
             epsilon *= epsilon_decay
@@ -130,6 +131,9 @@ def Ran_player(FPS):
                 game_state = 0
         else:
             env.render()
+
+def plot_result():
+    pass
 
 if __name__ == "__main__":
     env = gym.make("pygame-v0")
