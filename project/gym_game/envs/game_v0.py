@@ -130,8 +130,10 @@ class Balls(pygame.sprite.Sprite):
             #change moving dir with hit the border
             if (self.rect.center[0] <= self.radius and self.x_speed <= 0)or (self.rect.center[0] >= WINDOW_WIDTH-self.radius and self.x_speed >= 0):
                 self.x_speed *= -1
+                self.hit += 1
             if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                 self.y_speed *= -1
+                self.hit += 1
             
             #check collison
             self.collison()
@@ -275,6 +277,8 @@ class Gym_Game():
         self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.game_status, self.blk_weight)
 
     def action(self, action):
+        # TEST COUNTER
+        start = time.perf_counter()
         if action == 60:
             action = 61
         rad = (action+30)/180 * math.pi
@@ -296,6 +300,8 @@ class Gym_Game():
             self.all_sprites_group.update()
             self.view()
             all_end = check_round_end()
+            if time.perf_counter() - start > 30:
+                all_end = True
         
         self.ball.change_round()
             
@@ -319,16 +325,20 @@ class Gym_Game():
         return (np.array(obs), {})
     
     def evaluate(self):
-        rewards = self.ball.round_score
+        # rewards = self.ball.round_score
+        # self.ball.round_score = 0
+        # if rewards == 0:
+        #     rewards = -1000
+        # elif rewards <= 1:
+        #     rewards = -500
+        # elif rewards <= 2:
+        #     rewards = -300
+        # rewards += 10 * self.ball.round
+        rewards = 0
+        if self.ball.round_score > 0:
+            rewards = 1
         self.ball.round_score = 0
-        if rewards == 0:
-            rewards = -1000
-        elif rewards <= 1:
-            rewards = -500
-        elif rewards <= 2:
-            rewards = -300
-        rewards += 10 * self.ball.round
-        
+
         return rewards
 
     def is_done(self):
