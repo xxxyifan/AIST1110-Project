@@ -335,8 +335,10 @@ class Gym_Game():
         #     rewards = -300
         # rewards += 10 * self.ball.round
         rewards = 0
-        if self.ball.round_score > 0:
+        if self.ball.round_score > 5:
             rewards = 1
+        elif self.ball.round_score == 0:
+            rewards = -1
         self.ball.round_score = 0
 
         return rewards
