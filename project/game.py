@@ -64,7 +64,7 @@ class Balls(pygame.sprite.Sprite):
                     self.x_speed *= -1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
-          
+
 
         #collison with upgrade
         opverlap_upgrade = pygame.sprite.spritecollide(self, self.upgrade, True)
@@ -394,9 +394,6 @@ while True:
         bgm()
         start_time = time.time()
         
-    
-    
-    
     #move the pointer
     if is_degree_change == True:
         degree += change_value

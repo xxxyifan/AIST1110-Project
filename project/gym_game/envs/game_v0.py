@@ -34,7 +34,7 @@ blkweight = [
 
 
 class Balls(pygame.sprite.Sprite):
-    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group, game_status, blk_weight):
+    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group, blk_weight, mode="ai_training"):
         super().__init__(group, ball_group)
         self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
@@ -55,8 +55,7 @@ class Balls(pygame.sprite.Sprite):
         self.board = blk_weight
         self.org_board = deepcopy(self.board)
         self.damage = 1
-        self.game_status = game_status
-        self.hit = 0
+        self.mode = mode
 
     def collison(self):
 
@@ -73,7 +72,8 @@ class Balls(pygame.sprite.Sprite):
             # for i in self.board:
             #     print(i)
             # collision sound
- #           pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_1.ogg"))
+            if self.mode != "ai_training":
+                pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_1.ogg"))
         else:
             self.org_board = deepcopy(self.board)
 
@@ -85,16 +85,12 @@ class Balls(pygame.sprite.Sprite):
             for sprite in overlap_sprites:
                 if abs(sprite.rect.top - self.rect.bottom) < collision_tolerace and self.y_speed < 0:
                     self.y_speed *= -1
-                    self.hit += 1
                 if abs(sprite.rect.bottom - self.rect.top) < collision_tolerace and self.y_speed > 0:
                     self.y_speed *= -1
-                    self.hit += 1
                 if abs(sprite.rect.left - self.rect.right) < collision_tolerace and self.x_speed > 0:
                     self.x_speed *= -1
-                    self.hit += 1
                 if abs(sprite.rect.right - self.rect.left) < collision_tolerace and self.x_speed < 0:
                     self.x_speed *= -1
-                    self.hit += 1
           
 
         #collison with upgrade
@@ -102,7 +98,7 @@ class Balls(pygame.sprite.Sprite):
         if opverlap_upgrade:
             for upgrades in opverlap_upgrade:
                 if upgrades.upgrade_type == "ball_split":
-                    tmp_ball = Tmp_Balls(self.radius, self.rect.midright[0]-self.radius-1, self.rect.midright[1], self.round, self.group, self.ball, self.block, self.upgrade, self.damage, self.game_status, self.board)
+                    tmp_ball = Tmp_Balls(self.radius, self.rect.midright[0]-self.radius-1, self.rect.midright[1], self.round, self.group, self.ball, self.block, self.upgrade, self.damage, self.board, self.mode)
                     tmp_ball.x_speed = self.x_speed * -1
                     tmp_ball.y_speed = self.y_speed * random.uniform(0.7, 1.5)
                     tmp_ball.speed = random.randint(10,13)
@@ -111,7 +107,8 @@ class Balls(pygame.sprite.Sprite):
                     self.damage += 1
                 self.board[upgrades.rect.topleft[0]//50][upgrades.rect.topleft[1]//50] = 0
                 # collision sound
-#                pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_2.ogg"))
+                if self.mode != "ai_training":
+                    pygame.mixer.Channel(1).play(pygame.mixer.Sound("files/audio/collide_2.ogg"))
 
     def kill_all_block_and_upgrade(self):
         for sprite in self.block:
@@ -132,7 +129,7 @@ class Balls(pygame.sprite.Sprite):
                 self.x_speed *= -1
             if self.rect.center[1] <= self.radius and self.y_speed >= 0 :
                 self.y_speed *= -1
-            
+
             #check collison
             self.collison()
 
@@ -160,8 +157,8 @@ class Upgrade(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
 
 class Tmp_Balls(Balls):
-    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group, damage, game_status, board):
-        super().__init__(radius, pos_x, pos_y, round ,group, ball_group, block_group, upgrade_group, game_status, board)
+    def __init__(self, radius, pos_x, pos_y, round, group, ball_group, block_group, upgrade_group, damage, board, mode):
+        super().__init__(radius, pos_x, pos_y, round ,group, ball_group, block_group, upgrade_group, board, mode)
         self.image = pygame.image.load("files/image/sphere1.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
         self.damage = damage
@@ -244,7 +241,6 @@ class Gym_Game():
         self.radius = 20
         self.clock = pygame.time.Clock()
         self.round_ = 0
-        self.game_status = 0 # 0 = not yet start, 1 = start, 2 = end
 
         # Define an array which store the block location and block weighting
         self.blk_weight = [
@@ -272,11 +268,10 @@ class Gym_Game():
         self.upgrade_group = pygame.sprite.Group()
 
         #ball
-        self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.game_status, self.blk_weight)
+        self.ball = Balls(self.radius, WINDOW_WIDTH/2, WINDOW_HEIGHT-26, self.round_, self.all_sprites_group, self.ball_group, self.block_group, self.upgrade_group, self.blk_weight)
 
     def action(self, action):
-        if action == 60:
-            action = 61
+        start_time = time.perf_counter()
         rad = (action+30)/180 * math.pi
         self.ball.x_speed = cos(rad)
         self.ball.y_speed = sin(rad)
@@ -287,8 +282,6 @@ class Gym_Game():
             for sprite in self.ball_group:
                 if sprite.is_move == True:
                     return False
-                if sprite.hit >= 100:
-                    return True
             return True
 
         all_end = False
@@ -296,6 +289,8 @@ class Gym_Game():
             self.all_sprites_group.update()
             self.view()
             all_end = check_round_end()
+            if time.perf_counter() - start_time > 3:
+                all_end = True
         
         self.ball.change_round()
             
@@ -363,6 +358,19 @@ class Gym_Game():
                         block_score = font.render(str(self.ball.board[j][i]), False, (255, 255, 255))
                         self.window_surface.blit(block_score, (j * 50 + 22.5, i * 50 + 10))
         pygame.display.update()
+    def end(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        self.window_surface.blit(self.bg, (0, 0))
+        font = pygame.font.SysFont('Garamond', 50)
+        message = font.render("Game Over !", False, (0, 0, 0))
+        round_end = font.render('Round: ' + str(self.ball.round), False, (0, 0, 0))
+        self.window_surface.blit(message, (60, WINDOW_HEIGHT // 2 - 30))
+        self.window_surface.blit(round_end, (60, WINDOW_HEIGHT // 2 + 10))
+        pygame.display.update()
+
 
 # Generate Blocks on screen
 def generate_blocks(blk_weight, block_group, upgrade_group, all_sprites_group):
