@@ -6,6 +6,7 @@ import pygame
 import time
 import gym
 import gym_game
+import matplotlib
 
 from cmdargs import args
 
@@ -44,9 +45,8 @@ def simulate(GAME_MODE):
             state = next_state
 
             # Draw games
-            # if GAME_MODE == "ai":
-            #     print("Non-CLI")
-            #     env.render()
+            if GAME_MODE == "ai":
+                env.render()
 
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
@@ -56,6 +56,8 @@ def simulate(GAME_MODE):
                     f.write("\n")
                 break
 
+            # When training is done, plot graph
+            
         # exploring rate decay
         if epsilon >= 0.005:
             epsilon *= epsilon_decay

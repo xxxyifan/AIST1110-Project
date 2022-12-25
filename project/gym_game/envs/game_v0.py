@@ -8,6 +8,7 @@ from copy import copy, deepcopy
 import time
 from threading import Timer
 import numpy as np
+from cmdargs import args
 
 pygame.init()
 
@@ -287,7 +288,8 @@ class Gym_Game():
         all_end = False
         while all_end == False:
             self.all_sprites_group.update()
-            self.view()
+            if args.mode != "ai-cli":
+                self.view()
             all_end = check_round_end()
             if time.perf_counter() - start_time > 3:
                 all_end = True
