@@ -26,7 +26,7 @@ def simulate(GAME_MODE):
             if random.uniform(0, 1) < epsilon:
                 action = env.action_space.sample()
             else:
-                action = np.argmax(q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]])
+                action = np.argmax(q_table[state[0]*10+state[1]])
 
             if action >= 120:
                 action = 119
@@ -35,11 +35,11 @@ def simulate(GAME_MODE):
             total_reward += reward
 
             # Get correspond q value from state, action pair
-            q_value = q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]][action]
-            best_q = np.max(q_table[next_state[0]*1000+next_state[1]*100+next_state[2]*10+next_state[3]])
+            q_value = q_table[state[0]*10+state[1]][action]
+            best_q = np.max(q_table[next_state[0]*10+next_state[1]])
 
             # Q(state, action) <- (1 - a)Q(state, action) + a(reward + rmaxQ(next state, all actions))
-            q_table[state[0]*1000+state[1]*100+state[2]*10+state[3]][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
+            q_table[state[0]*10+state[1]][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
 
             # Set up for the next iteration
             state = next_state
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     learning_rate = 0.1
     gamma = 0.45
     num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
-    q_table = np.zeros((num_box[0]*num_box[1]*num_box[2]*num_box[3], env.action_space.n))
+    q_table = np.zeros((num_box[0]*num_box[1], env.action_space.n))
     # Import Q_table
     if args.file is not None:
         q_table = np.loadtxt(open(args.file), delimiter=" ")

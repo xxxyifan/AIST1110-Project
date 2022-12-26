@@ -321,22 +321,13 @@ class Gym_Game():
         return (np.array(obs), {})
     
     def evaluate(self):
-                # rewards = self.ball.round_score
-        # self.ball.round_score = 0
-        # if rewards == 0:
-        #     rewards = -1000
-        # elif rewards <= 1:
-        #     rewards = -500
-        # elif rewards <= 2:
-        #     rewards = -300
-        # rewards += 10 * self.ball.round
-
-        rewards = 0
-
-        if self.ball.round_score > 5:
-            rewards = 1
-        elif self.ball.round_score == 0:
-            rewards = -1
+        rewards = self.ball.round_score
+        self.ball.round_score = 0
+        if rewards < 5:
+            value = -5
+        else:
+            value = 1
+        rewards = rewards * value
         
         return rewards
 
