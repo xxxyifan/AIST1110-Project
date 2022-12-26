@@ -1,0 +1,29 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: osx-arm64
+box2d-py=2.3.8=py310h0f1eb42_7
+brotli-bin=1.0.9=h1a28f6b_7
+c-ares=1.18.1=h3422bc3_0
+ca-certificates=2022.12.7=h4653dfc_0
+charset-normalizer=2.0.4=pyhd3eb1b0_0
+font-ttf-dejavu-sans-mono=2.37=hab24e00_0
+font-ttf-inconsolata=3.000=h77eed37_0
+font-ttf-source-code-pro=2.038=h77eed37_0
+font-ttf-ubuntu=0.83=hab24e00_0
+fonts-conda-ecosystem=1=0
+fonts-conda-forge=1=0
+gym-all=0.21.0=py310hb6292c7_2
+gym-box2d=0.21.0=py310hb6292c7_2
+gym-classic_control=0.21.0=py310hb6292c7_2
+gym-notices=0.0.8=pypi_0
+gym-other=0.21.0=py310hb6292c7_2
+gym-toy_text=0.21.0=py310hb6292c7_2
+libwebp-base=1.2.4=h1a28f6b_0
+llvm-openmp=14.0.6=hc6e5704_0
+lz4-c=1.9.4=h313beb8_0
+matplotlib-base=3.5.3=py310hc377ac9_0
+numpy-base=1.23.3=py310h742c864_1
+p11-kit=0.24.1=h29577a5_0
+py-opencv=4.6.0=py310h69fb684_4
+python-dateutil=2.8.2=pyhd3eb1b0_0
+svt-av1=1.4.1=h7ea286d_0
