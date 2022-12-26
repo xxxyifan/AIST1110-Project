@@ -171,7 +171,7 @@ if __name__ == "__main__":
     epsilon = 1
     epsilon_decay = 0.999
     learning_rate = 0.1
-    gamma = 0.45
+    gamma = 0.3
     num_box = tuple((env.observation_space.high + np.ones(env.observation_space.shape)).astype(int))
     q_table = np.zeros((num_box[0]*num_box[1], env.action_space.n))
     # Import Q_table

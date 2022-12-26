@@ -319,10 +319,12 @@ class Gym_Game():
         rewards = self.ball.round_score
         self.ball.round_score = 0
         if rewards < 5:
-            value = -5
+            if rewards == 0:
+                rewards = -1
+            else:
+                rewards = 0
         else:
-            value = 1
-        rewards = rewards * value
+            rewards = 1
         
         return rewards
 
