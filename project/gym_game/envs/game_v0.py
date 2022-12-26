@@ -297,7 +297,7 @@ class Gym_Game():
         self.ball.change_round()
             
     def observe(self):
-        obs = [0,0,0,0]
+        obs = [0,0]
         value_rows = [0,0,0,0,0,0,0,0,0,0]
         value_cols = [0,0,0,0,0,0,0,0,0,0]
         for i in range(10):
@@ -312,12 +312,7 @@ class Gym_Game():
                     value_rows[i] += 100 * i * i
 
         obs[0] = value_rows.index(max(value_rows))
-        value_rows.pop(obs[0])
-        obs[1] = value_rows.index(max(value_rows))
-        
-        obs[2] = value_cols.index(max(value_cols))
-        value_cols.pop(obs[2])
-        obs[3] = value_cols.index(max(value_cols))
+        obs[1] = value_cols.index(max(value_cols))
         return (np.array(obs), {})
     
     def evaluate(self):
